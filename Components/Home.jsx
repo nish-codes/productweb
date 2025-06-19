@@ -39,23 +39,26 @@ const Home = () => {
           data-scroll
           data-scroll-speed="-3" 
         >
-          <Navbar />
-        </div>
-
         
+        </div>
+        
+       <div className="absolute top-0 right-0 w-screen z-30 p-4">
+     <Navbar />
+      </div>
 
         <div
-          className="relative z-10 flex flex-col items-center justify-center h-full text-center text-white"
+          className="relative z-10 flex flex-col items-center justify-center h-full text-center "
           data-scroll
           data-scroll-speed="2"
         >
-          <h1 className={`${cinzel.className} text-5xl font-bold mb-4`}>
+          
+          <h1 className={`${cinzel.className} text-5xl text-gray-600 font-bold mb-4`}>
             Divine Offerings for Every Ritual
           </h1>
-          <p className="text-lg mb-6">
+          <p className="text-lg mb-6 text-gray-500">
             Explore handpicked pooja essentials delivered with care and devotion.
           </p>
-          <button className="px-6 py-3 bg-[#DA8616] text-black rounded-md hover:scale-110 transition-all">
+          <button className="px-6 py-3 bg-[#DA8616] text-black rounded-md hover:text-white hover:bg-gray-700 hover:scale-110 transition-all">
             Explore Now
           </button>
         </div>

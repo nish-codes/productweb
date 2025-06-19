@@ -8,7 +8,7 @@ const playfair = Playfair_Display({
 });
 const Navbar = () => {
   return (
-    <div className='h-[10vh]  flex items-center justify-between px-6' >
+    <div className='h-[10vh]  flex items-center justify-between px-6  ' >
         <div className='flex items-center'><img className = 'h-[10vh] w-[auto]'src="/Assets/logo-new.png" alt="logo" />
         <h1 className={`${playfair.className} text-[#333333] text-3xl font-bold`}>Ssp Enterprise</h1>
         </div>
