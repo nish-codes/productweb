@@ -9,8 +9,14 @@ const cinzel = Cinzel({
   subsets: ["latin"],
   weight: ["400", "700"],
 });
-
+const data = [
+      { icon: "🪔", title: "Diyas", desc: "Traditional lamps for your pooja" },
+      { icon: "🧘‍♂️", title: "Incense", desc: "Fragrant sticks to uplift rituals" },
+      { icon: "🙏", title: "Idols", desc: "Sacred idols of deities" },
+      { icon: "🌺", title: "Samagri", desc: "All-in-one pooja essentials" },
+    ]
 const Home = () => {
+  
   const scrollRef = useRef(null);
 
   useEffect(() => {
@@ -67,9 +73,20 @@ const Home = () => {
       
       <div
         data-scroll-section  
-        className="h-screen bg-white flex items-center justify-center text-3xl font-bold"
+        className=" bg-[#FAF3E0]  min-h-screen py-8"
       >
-        Scroll Section with Content
+        <h2 className="text-center font-semibold text-3xl font-serif mb-[10vh]  ">Explore Our Categories</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 ">
+          {data.map((elem,index)=>{
+            return(
+            <div className="p-5 rounded-md shadow-lg text-center m-6 hover:scale-110 transition-all">
+              <div className="text-5xl mb-4 font-thin">{elem.icon}</div>
+              <h3 className="text-3xl mb-3 font-semibold">{elem.title}</h3>
+              <p className="text-lg text-gray-500 ">{elem.desc}</p>
+            </div>
+            )
+          })}
+        </div>
       </div>
     </div>
   );
