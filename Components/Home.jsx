@@ -76,10 +76,10 @@ const Home = () => {
         className=" bg-[#FAF3E0]  min-h-screen py-8"
       >
         <h2 className="text-center font-semibold text-3xl font-serif mb-[10vh]  ">Explore Our Categories</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 ">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 place-items-center ">
           {data.map((elem,index)=>{
             return(
-            <div className="p-5 rounded-md shadow-lg text-center m-6 hover:scale-110 transition-all">
+            <div className="p-5 rounded-full shadow-lg text-center m-6 hover:scale-110 transition-all w-64 h-64 flex flex-col items-center justify-center">
               <div className="text-5xl mb-4 font-thin">{elem.icon}</div>
               <h3 className="text-3xl mb-3 font-semibold">{elem.title}</h3>
               <p className="text-lg text-gray-500 ">{elem.desc}</p>
