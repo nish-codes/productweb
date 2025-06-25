@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
-import Navbar from "./Navbar";
+import React, { useEffect, useRef, useState } from "react";
+import NavbarClient from "./NavbarClient";
 import { Cinzel } from "next/font/google";
 import "locomotive-scroll/dist/locomotive-scroll.css";
 import { FaWhatsapp } from "react-icons/fa";
+import Link from 'next/link';
 
 const cinzel = Cinzel({
   subsets: ["latin"],
@@ -63,10 +64,13 @@ const reasons = [
   },
 ];
 
-
 const Home = () => {
-  
   const scrollRef = useRef(null);
+  const [navbarHidden, setNavbarHidden] = useState(false);
+  const lastScrollY = useRef(0);
+  const lastDirection = useRef(null);
+  const threshold = 20; // px
+  const debounceTimeout = useRef(null);
 
   useEffect(() => {
     if (!scrollRef.current) return;
@@ -78,15 +82,39 @@ const Home = () => {
         smooth: true,
         multiplier: 1,
       });
+      scroll.on("scroll", (obj) => {
+        const currentScrollY = obj.scroll.y;
+        const diff = currentScrollY - lastScrollY.current;
+        // Debounce to prevent flicker
+        if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
+        debounceTimeout.current = setTimeout(() => {
+          if (diff > threshold) {
+            // Scrolled down
+            if (lastDirection.current !== 'down') {
+              setNavbarHidden(true);
+              lastDirection.current = 'down';
+            }
+          } else if (diff < -threshold) {
+            // Scrolled up
+            if (lastDirection.current !== 'up') {
+              setNavbarHidden(false);
+              lastDirection.current = 'up';
+            }
+          }
+        }, 50);
+        lastScrollY.current = currentScrollY;
+      });
     });
 
     return () => {
       if (scroll) scroll.destroy();
+      if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
     };
   }, []);
 
   return (
     <div ref={scrollRef} data-scroll-container className="overflow-hidden">
+      <NavbarClient hidden={navbarHidden} />
      
       <div data-scroll-section className="relative h-screen">
         <div
@@ -97,10 +125,6 @@ const Home = () => {
         
         </div>
         
-       <div className="absolute top-0 right-0 w-screen z-30 p-4">
-     <Navbar />
-      </div>
-
         <div
           className="relative z-10 flex flex-col items-center justify-center h-full text-center "
           data-scroll
@@ -141,11 +165,12 @@ const Home = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 ">
           {data.map((elem,index)=>{
             return(
-            <div key={index} className="p-5 rounded-md shadow-lg text-center m-6 hover:scale-110 transition-all">
+            <Link key={index} href={`/categories/${elem.title.toLowerCase()}`}
+              className="p-5 rounded-md shadow-lg text-center m-6 hover:scale-110 transition-all block">
               <div className="text-5xl mb-4 font-thin">{elem.icon}</div>
               <h3 className="text-3xl mb-3 font-semibold">{elem.title}</h3>
               <p className="text-lg text-gray-500 ">{elem.desc}</p>
-            </div>
+            </Link>
             )
           })}
           
