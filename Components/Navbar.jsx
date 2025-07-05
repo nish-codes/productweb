@@ -1,6 +1,8 @@
 
 import React from 'react'
 import { Playfair_Display } from 'next/font/google';
+import Link from "next/link";
+
 
 const playfair = Playfair_Display({
   subsets: ['latin'],
@@ -16,6 +18,9 @@ const Navbar = () => {
         <li className='cursor-pointer hover:text-gray-600 transition-colors'>Home</li>
         <li className='cursor-pointer hover:text-gray-600 transition-colors'>Products</li>
         <li className='cursor-pointer hover:text-gray-600 transition-colors'>Contact us</li>
+        <Link href="/login" className="text-[#DA8616] font-semibold">
+  Admin Login
+</Link>
       </ul>
     </div>
   )
