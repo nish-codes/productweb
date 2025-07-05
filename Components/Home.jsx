@@ -6,7 +6,7 @@ import { Cinzel } from "next/font/google";
 import "locomotive-scroll/dist/locomotive-scroll.css";
 import { FaWhatsapp } from "react-icons/fa";
 import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
-import { db } from "../firebase/config"; // make sure this path is correct
+import { db } from "../firebase/config"; // update the path if needed
 
 const cinzel = Cinzel({
   subsets: ["latin"],
@@ -62,7 +62,7 @@ const Home = () => {
     if (!scrollRef.current) return;
 
     let scroll;
-    import("locomotive-scroll/dist/locomotive-scroll").then((LocomotiveScroll) => {
+    import("locomotive-scroll").then((LocomotiveScroll) => {
       scroll = new LocomotiveScroll.default({
         el: scrollRef.current,
         smooth: true,
