@@ -44,6 +44,7 @@ const reasons = [
 const Home = () => {
   const scrollRef = useRef(null);
   const [products, setProducts] = useState([]);
+  const [scrollInstance, setScrollInstance] = useState(null);
 
   useEffect(() => {
     const q = query(collection(db, "products"), orderBy("createdAt", "desc"));
@@ -67,7 +68,15 @@ const Home = () => {
         el: scrollRef.current,
         smooth: true,
         multiplier: 1,
+        lerp: 0.1,
+        smartphone: {
+          smooth: true,
+        },
+        tablet: {
+          smooth: true,
+        },
       });
+      setScrollInstance(scroll);
     });
 
     return () => {
@@ -75,8 +84,18 @@ const Home = () => {
     };
   }, []);
 
+  // Update Locomotive Scroll when products change
+  useEffect(() => {
+    if (scrollInstance) {
+      setTimeout(() => {
+        scrollInstance.update();
+      }, 100);
+    }
+  }, [products, scrollInstance]);
+
   return (
-    <div ref={scrollRef} data-scroll-container className="overflow-hidden">
+    <div ref={scrollRef} data-scroll-container>
+      {/* Hero Section */}
       <div data-scroll-section className="relative h-screen">
         <div
           className="absolute inset-0 bg-[url('/Assets/modelbg.jpg')] bg-cover bg-bottom"
@@ -105,7 +124,8 @@ const Home = () => {
         </div>
       </div>
 
-      <div data-scroll-section className="bg-[#FAF3E0] min-h-screen py-8 relative">
+      {/* Main Content Section */}
+      <div data-scroll-section className="bg-[#FAF3E0] py-8 relative">
         <div className="fixed top-1/2 right-5 z-50">
           <a href="https://wa.me/919876543210" target="_blank" rel="noopener noreferrer">
             <FaWhatsapp className="text-green-500 text-5xl hover:scale-110 transition-transform duration-200" />
@@ -165,7 +185,8 @@ const Home = () => {
           </div>
         </div>
 
-        <footer className="bg-[#DA8616] text-black py-10 mt-20">
+        {/* Footer */}
+        <footer className="bg-[#DA8616] text-black py-10 mt-20 min-h-[200px]">
           <div className="max-w-6xl mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
               <h4 className="text-xl font-bold mb-4">About Us</h4>
