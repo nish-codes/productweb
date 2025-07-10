@@ -46,18 +46,19 @@ const Home = () => {
   const [products, setProducts] = useState([]);
   const [scrollInstance, setScrollInstance] = useState(null);
 
-  useEffect(() => {
-    const q = query(collection(db, "products"), orderBy("createdAt", "desc"));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const items = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      setProducts(items);
-    });
+ useEffect(() => {
+  const q = query(collection(db, "products"), orderBy("createdAt", "desc"));
+  const unsubscribe = onSnapshot(q, (snapshot) => {
+    const items = snapshot.docs
+      .map((doc) => ({ id: doc.id, ...doc.data() }))
+      .filter((item) => item.bestSeller === true)
+      .slice(0, 3); // Only 3 best sellers
+    setProducts(items);
+  });
 
-    return () => unsubscribe();
-  }, []);
+  return () => unsubscribe();
+}, []);
+
 
   useEffect(() => {
     if (!scrollRef.current) return;

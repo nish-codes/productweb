@@ -13,7 +13,7 @@ const Navbar = ({ isHome, hidden }) => {
   const navClass = [
     isHome
       ? 'absolute top-0 right-0 w-screen z-30 p-4 h-[10vh] flex items-center justify-between px-6 bg-transparent'
-      : 'h-[10vh] flex items-center justify-between px-6 bg-white shadow',
+      : 'h-[10vh] flex items-center justify-between px-6 bg-transparent shadow',
     'transition-transform duration-300',
     hidden ? '-translate-y-full' : 'translate-y-0'
   ].join(' ');
@@ -24,7 +24,7 @@ const Navbar = ({ isHome, hidden }) => {
       </div>
       <ul className='flex items-center space-x-8'>
         <li className='cursor-pointer hover:text-gray-600 transition-colors'>Home</li>
-        <li className='cursor-pointer hover:text-gray-600 transition-colors'>Products</li>
+        <Link href = "/product"className='cursor-pointer hover:text-gray-600 transition-colors'>Products</Link>
         <li className='cursor-pointer hover:text-gray-600 transition-colors'>Contact us</li>
         <Link href="/login" className="text-[#DA8616] font-semibold">
   Admin Login
