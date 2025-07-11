@@ -100,7 +100,7 @@ const Home = () => {
         scrollInstance.update();
       }, 100);
     }
-  }, [products, scrollInstance]);
+  }, [products, categories, scrollInstance]);
 
   useEffect(() => {
     const unsub = onSnapshot(categoriesCollection, (snapshot) => {

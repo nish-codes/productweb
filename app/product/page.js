@@ -5,8 +5,6 @@ import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
 import { db, categoriesCollection } from "../../firebase/config";
 import { useSearchParams } from "next/navigation";
 
-const categories = ["All", "Diyas", "Incense", "Idols", "Samagri"];
-
 export default function ProductPage() {
   const [products, setProducts] = useState([]);
   const [filtered, setFiltered] = useState([]);
