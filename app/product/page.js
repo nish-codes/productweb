@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
-import { db } from "../../firebase/config";
+import { db, categoriesCollection } from "../../firebase/config";
 
 const categories = ["All", "Diyas", "Incense", "Idols", "Samagri"];
 
@@ -10,6 +10,9 @@ export default function ProductPage() {
   const [products, setProducts] = useState([]);
   const [filtered, setFiltered] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const [categories, setCategories] = useState([]);
+  const [subcategories, setSubcategories] = useState([]);
+  const [selectedSubcategory, setSelectedSubcategory] = useState("");
 
   useEffect(() => {
     const q = query(collection(db, "products"), orderBy("createdAt", "desc"));
@@ -25,6 +28,37 @@ export default function ProductPage() {
     return () => unsubscribe();
   }, []);
 
+  useEffect(() => {
+    const unsub = onSnapshot(categoriesCollection, (snapshot) => {
+      const cats = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      setCategories(cats);
+    });
+    return () => unsub();
+  }, []);
+
+  useEffect(() => {
+    if (selectedCategory === "All") {
+      setSubcategories([]);
+      setSelectedSubcategory("");
+      setFiltered(products);
+      return;
+    }
+    const cat = categories.find((c) => c.name === selectedCategory);
+    setSubcategories(cat ? cat.subcategories || [] : []);
+    setSelectedSubcategory("");
+    setFiltered(products.filter((p) => p.category === selectedCategory));
+  }, [selectedCategory, categories, products]);
+
+  useEffect(() => {
+    if (selectedSubcategory) {
+      setFiltered(products.filter((p) => p.category === selectedCategory && p.subcategory === selectedSubcategory));
+    } else if (selectedCategory !== "All") {
+      setFiltered(products.filter((p) => p.category === selectedCategory));
+    } else {
+      setFiltered(products);
+    }
+  }, [selectedSubcategory, selectedCategory, products]);
+
   const handleCategorySelect = (category) => {
     setSelectedCategory(category);
     if (category === "All") {
@@ -38,21 +72,37 @@ export default function ProductPage() {
     <div className="p-6 max-w-7xl mx-auto">
       <h1 className="text-3xl font-bold text-center mb-6">Our Products</h1>
 
-      <div className="flex flex-wrap justify-center gap-4 mb-10">
+      <div className="flex flex-wrap justify-center gap-4 mb-4">
+        <button
+          key="All"
+          onClick={() => setSelectedCategory("All")}
+          className={`px-4 py-2 rounded-full text-sm font-medium border ${selectedCategory === "All" ? "bg-orange-500 text-white border-orange-600" : "bg-white text-gray-700 border-gray-300"} hover:bg-orange-100`}
+        >
+          All
+        </button>
         {categories.map((cat) => (
           <button
-            key={cat}
-            onClick={() => handleCategorySelect(cat)}
-            className={`px-4 py-2 rounded-full text-sm font-medium border ${
-              selectedCategory === cat
-                ? "bg-orange-500 text-white border-orange-600"
-                : "bg-white text-gray-700 border-gray-300"
-            } hover:bg-orange-100`}
+            key={cat.id}
+            onClick={() => setSelectedCategory(cat.name)}
+            className={`px-4 py-2 rounded-full text-sm font-medium border ${selectedCategory === cat.name ? "bg-orange-500 text-white border-orange-600" : "bg-white text-gray-700 border-gray-300"} hover:bg-orange-100`}
           >
-            {cat}
+            {cat.name}
           </button>
         ))}
       </div>
+      {selectedCategory !== "All" && subcategories.length > 0 && (
+        <div className="flex flex-wrap justify-center gap-2 mb-8">
+          {subcategories.map((sub, i) => (
+            <button
+              key={i}
+              onClick={() => setSelectedSubcategory(sub)}
+              className={`px-3 py-1 rounded-full text-xs font-medium border ${selectedSubcategory === sub ? "bg-orange-400 text-white border-orange-500" : "bg-white text-gray-700 border-gray-300"} hover:bg-orange-100`}
+            >
+              {sub}
+            </button>
+          ))}
+        </div>
+      )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
         {filtered.length === 0 ? (
