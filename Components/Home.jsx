@@ -6,18 +6,26 @@ import { Cinzel } from "next/font/google";
 import "locomotive-scroll/dist/locomotive-scroll.css";
 import { FaWhatsapp } from "react-icons/fa";
 import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
-import { db } from "../firebase/config"; // update the path if needed
+import { db, categoriesCollection } from "../firebase/config"; // update the path if needed
+import Link from "next/link";
 
 const cinzel = Cinzel({
   subsets: ["latin"],
   weight: ["400", "700"],
 });
 
-const data = [
-  { icon: "🪔", title: "Diyas", desc: "Traditional lamps for your pooja" },
-  { icon: "🧘‍♂️", title: "Incense", desc: "Fragrant sticks to uplift rituals" },
-  { icon: "🙏", title: "Idols", desc: "Sacred idols of deities" },
-  { icon: "🌺", title: "Samagri", desc: "All-in-one pooja essentials" },
+const defaultIcons = ["🪔", "🧘‍♂️", "🙏", "🌺", "🕉️", "🚚", "❤️", "🌸", "🛕", "🧿", "🪔"];
+const defaultDescs = [
+  "Traditional lamps for your pooja",
+  "Fragrant sticks to uplift rituals",
+  "Sacred idols of deities",
+  "All-in-one pooja essentials",
+  "Blessed items for your rituals",
+  "Spiritual accessories",
+  "Handpicked for devotion",
+  "Divine gifts",
+  "Pure and authentic",
+  "Special pooja items"
 ];
 
 const reasons = [
@@ -45,6 +53,7 @@ const Home = () => {
   const scrollRef = useRef(null);
   const [products, setProducts] = useState([]);
   const [scrollInstance, setScrollInstance] = useState(null);
+  const [categories, setCategories] = useState([]);
 
  useEffect(() => {
   const q = query(collection(db, "products"), orderBy("createdAt", "desc"));
@@ -58,7 +67,6 @@ const Home = () => {
 
   return () => unsubscribe();
 }, []);
-
 
   useEffect(() => {
     if (!scrollRef.current) return;
@@ -93,6 +101,19 @@ const Home = () => {
       }, 100);
     }
   }, [products, scrollInstance]);
+
+  useEffect(() => {
+    const unsub = onSnapshot(categoriesCollection, (snapshot) => {
+      const cats = snapshot.docs.map((doc, i) => ({
+        id: doc.id,
+        ...doc.data(),
+        icon: doc.data().icon || defaultIcons[i % defaultIcons.length],
+        desc: doc.data().desc || defaultDescs[i % defaultDescs.length],
+      }));
+      setCategories(cats);
+    });
+    return () => unsub();
+  }, []);
 
   return (
     <div ref={scrollRef} data-scroll-container>
@@ -135,12 +156,14 @@ const Home = () => {
 
         <h2 className="text-center font-semibold text-3xl font-serif mb-[10vh]">Explore Our Categories</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4">
-          {data.map((elem, index) => (
-            <div key={index} className="p-5 rounded-md shadow-lg text-center m-6 hover:scale-110 transition-all">
-              <div className="text-5xl mb-4 font-thin">{elem.icon}</div>
-              <h3 className="text-3xl mb-3 font-semibold">{elem.title}</h3>
-              <p className="text-lg text-gray-500">{elem.desc}</p>
-            </div>
+          {categories.map((cat, index) => (
+            <Link key={cat.id} href={`/product?category=${encodeURIComponent(cat.name)}`}>
+              <div className="p-5 rounded-md shadow-lg text-center m-6 hover:scale-110 transition-all cursor-pointer bg-white">
+                <div className="text-5xl mb-4 font-thin">{cat.icon}</div>
+                <h3 className="text-3xl mb-3 font-semibold">{cat.name}</h3>
+                <p className="text-lg text-gray-500">{cat.desc}</p>
+              </div>
+            </Link>
           ))}
         </div>
 

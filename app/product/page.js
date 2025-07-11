@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
 import { db, categoriesCollection } from "../../firebase/config";
+import { useSearchParams } from "next/navigation";
 
 const categories = ["All", "Diyas", "Incense", "Idols", "Samagri"];
 
@@ -13,6 +14,8 @@ export default function ProductPage() {
   const [categories, setCategories] = useState([]);
   const [subcategories, setSubcategories] = useState([]);
   const [selectedSubcategory, setSelectedSubcategory] = useState("");
+
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     const q = query(collection(db, "products"), orderBy("createdAt", "desc"));
@@ -58,6 +61,13 @@ export default function ProductPage() {
       setFiltered(products);
     }
   }, [selectedSubcategory, selectedCategory, products]);
+
+  useEffect(() => {
+    const catParam = searchParams.get("category");
+    if (catParam && categories.some((c) => c.name === catParam)) {
+      setSelectedCategory(catParam);
+    }
+  }, [categories, searchParams]);
 
   const handleCategorySelect = (category) => {
     setSelectedCategory(category);
