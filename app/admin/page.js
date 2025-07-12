@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { db } from "../../firebase/config";
+import { db, categoriesCollection } from "../../firebase/config";
 import {
   collection,
   addDoc,
@@ -23,9 +23,14 @@ export default function AdminPage() {
     image: null,
     bestSeller: false,
     category: "",
+    subcategory: "",
   });
   const [loading, setLoading] = useState(false);
   const [statusMsg, setStatusMsg] = useState("");
+  const [categories, setCategories] = useState([]);
+  const [subcategories, setSubcategories] = useState([]);
+  const [newCategory, setNewCategory] = useState("");
+  const [newSubcategory, setNewSubcategory] = useState("");
 
   useEffect(() => {
     const unsub = onSnapshot(collection(db, "products"), (snapshot) => {
@@ -35,6 +40,23 @@ export default function AdminPage() {
 
     return () => unsub();
   }, []);
+
+  useEffect(() => {
+    const unsub = onSnapshot(categoriesCollection, (snapshot) => {
+      const cats = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      setCategories(cats);
+    });
+    return () => unsub();
+  }, []);
+
+  useEffect(() => {
+    if (!form.category) {
+      setSubcategories([]);
+      return;
+    }
+    const cat = categories.find((c) => c.name === form.category);
+    setSubcategories(cat ? cat.subcategories || [] : []);
+  }, [form.category, categories]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -59,6 +81,7 @@ export default function AdminPage() {
       image: imageUrl || form.image,
       bestSeller: form.bestSeller,
       category: form.category,
+      subcategory: form.subcategory,
       createdAt: serverTimestamp(),
     };
 
@@ -75,7 +98,7 @@ export default function AdminPage() {
       setStatusMsg("Failed to save product.");
     }
 
-    setForm({ title: "", description: "", price: "", image: null, bestSeller: false, category: "" });
+    setForm({ title: "", description: "", price: "", image: null, bestSeller: false, category: "", subcategory: "" });
     setLoading(false);
     setTimeout(() => setStatusMsg(""), 2000);
   };
@@ -89,6 +112,7 @@ export default function AdminPage() {
       image: product.image,
       bestSeller: product.bestSeller || false,
       category: product.category || "",
+      subcategory: product.subcategory || "",
     });
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -97,6 +121,23 @@ export default function AdminPage() {
     const confirm = window.confirm("Are you sure you want to delete?");
     if (confirm) {
       await deleteDoc(doc(db, "products", id));
+    }
+  };
+
+  const handleAddCategory = async () => {
+    if (!newCategory) return;
+    await addDoc(categoriesCollection, { name: newCategory, subcategories: [] });
+    setForm({ ...form, category: newCategory, subcategory: "" });
+    setNewCategory("");
+  };
+  const handleAddSubcategory = async () => {
+    if (!newSubcategory || !form.category) return;
+    const catDoc = categories.find((c) => c.name === form.category);
+    if (catDoc) {
+      const ref = doc(categoriesCollection, catDoc.id);
+      await updateDoc(ref, { subcategories: [...(catDoc.subcategories || []), newSubcategory] });
+      setForm({ ...form, subcategory: newSubcategory });
+      setNewSubcategory("");
     }
   };
 
@@ -145,18 +186,48 @@ export default function AdminPage() {
           disabled={loading}
         />
 
-        <select
-          className="w-full border p-2 rounded"
-          value={form.category}
-          onChange={(e) => setForm({ ...form, category: e.target.value })}
-          required
-        >
-          <option value="">Select Category</option>
-          <option value="Diyas">Diyas</option>
-          <option value="Incense">Incense</option>
-          <option value="Idols">Idols</option>
-          <option value="Samagri">Samagri</option>
-        </select>
+        <div className="flex gap-2">
+          <select
+            className="w-full border p-2 rounded"
+            value={form.category}
+            onChange={(e) => setForm({ ...form, category: e.target.value, subcategory: "" })}
+            required
+          >
+            <option value="">Select Category</option>
+            {categories.map((cat) => (
+              <option key={cat.id} value={cat.name}>{cat.name}</option>
+            ))}
+          </select>
+          <input
+            className="border p-2 rounded"
+            placeholder="New Category"
+            value={newCategory}
+            onChange={(e) => setNewCategory(e.target.value)}
+          />
+          <button type="button" onClick={handleAddCategory} className="bg-green-500 text-white px-2 rounded">Add</button>
+        </div>
+        {form.category && (
+          <div className="flex gap-2">
+            <select
+              className="w-full border p-2 rounded"
+              value={form.subcategory || ""}
+              onChange={(e) => setForm({ ...form, subcategory: e.target.value })}
+              required
+            >
+              <option value="">Select Subcategory</option>
+              {subcategories.map((sub, i) => (
+                <option key={i} value={sub}>{sub}</option>
+              ))}
+            </select>
+            <input
+              className="border p-2 rounded"
+              placeholder="New Subcategory"
+              value={newSubcategory}
+              onChange={(e) => setNewSubcategory(e.target.value)}
+            />
+            <button type="button" onClick={handleAddSubcategory} className="bg-green-500 text-white px-2 rounded">Add</button>
+          </div>
+        )}
 
         <label className="flex items-center space-x-2">
           <input
