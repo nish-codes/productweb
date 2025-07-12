@@ -37,7 +37,6 @@ export default function AdminPage() {
       const list = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
       setProducts(list);
     });
-
     return () => unsub();
   }, []);
 
@@ -98,7 +97,15 @@ export default function AdminPage() {
       setStatusMsg("Failed to save product.");
     }
 
-    setForm({ title: "", description: "", price: "", image: null, bestSeller: false, category: "", subcategory: "" });
+    setForm({
+      title: "",
+      description: "",
+      price: "",
+      image: null,
+      bestSeller: false,
+      category: "",
+      subcategory: "",
+    });
     setLoading(false);
     setTimeout(() => setStatusMsg(""), 2000);
   };
@@ -126,18 +133,44 @@ export default function AdminPage() {
 
   const handleAddCategory = async () => {
     if (!newCategory) return;
-    await addDoc(categoriesCollection, { name: newCategory, subcategories: [] });
+    await addDoc(categoriesCollection, {
+      name: newCategory,
+      subcategories: [],
+    });
     setForm({ ...form, category: newCategory, subcategory: "" });
     setNewCategory("");
   };
+
   const handleAddSubcategory = async () => {
     if (!newSubcategory || !form.category) return;
     const catDoc = categories.find((c) => c.name === form.category);
     if (catDoc) {
       const ref = doc(categoriesCollection, catDoc.id);
-      await updateDoc(ref, { subcategories: [...(catDoc.subcategories || []), newSubcategory] });
+      await updateDoc(ref, {
+        subcategories: [...(catDoc.subcategories || []), newSubcategory],
+      });
       setForm({ ...form, subcategory: newSubcategory });
       setNewSubcategory("");
+    }
+  };
+
+  const handleDeleteCategory = async (catId) => {
+    const confirm = window.confirm("Delete this category and its subcategories?");
+    if (!confirm) return;
+    await deleteDoc(doc(categoriesCollection, catId));
+    if (form.category === catId) {
+      setForm({ ...form, category: "", subcategory: "" });
+    }
+  };
+
+  const handleDeleteSubcategory = async (subToDelete) => {
+    const catDoc = categories.find((c) => c.name === form.category);
+    if (!catDoc) return;
+    const ref = doc(categoriesCollection, catDoc.id);
+    const updatedSubs = (catDoc.subcategories || []).filter((s) => s !== subToDelete);
+    await updateDoc(ref, { subcategories: updatedSubs });
+    if (form.subcategory === subToDelete) {
+      setForm({ ...form, subcategory: "" });
     }
   };
 
@@ -190,12 +223,16 @@ export default function AdminPage() {
           <select
             className="w-full border p-2 rounded"
             value={form.category}
-            onChange={(e) => setForm({ ...form, category: e.target.value, subcategory: "" })}
+            onChange={(e) =>
+              setForm({ ...form, category: e.target.value, subcategory: "" })
+            }
             required
           >
             <option value="">Select Category</option>
             {categories.map((cat) => (
-              <option key={cat.id} value={cat.name}>{cat.name}</option>
+              <option key={cat.id} value={cat.name}>
+                {cat.name}
+              </option>
             ))}
           </select>
           <input
@@ -204,29 +241,83 @@ export default function AdminPage() {
             value={newCategory}
             onChange={(e) => setNewCategory(e.target.value)}
           />
-          <button type="button" onClick={handleAddCategory} className="bg-green-500 text-white px-2 rounded">Add</button>
+          <button
+            type="button"
+            onClick={handleAddCategory}
+            className="bg-green-500 text-white px-2 rounded"
+          >
+            Add
+          </button>
         </div>
+
+        {/* Category List */}
+        <div className="mt-4">
+          <h3 className="font-semibold mb-2">All Categories</h3>
+          <ul className="space-y-2">
+            {categories.map((cat) => (
+              <li key={cat.id} className="flex items-center gap-2">
+                <span className="flex-1">{cat.name}</span>
+                <button
+                  className="bg-red-500 text-white px-2 rounded text-sm"
+                  onClick={() => handleDeleteCategory(cat.id)}
+                >
+                  Delete
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+
         {form.category && (
-          <div className="flex gap-2">
-            <select
-              className="w-full border p-2 rounded"
-              value={form.subcategory || ""}
-              onChange={(e) => setForm({ ...form, subcategory: e.target.value })}
-              required
-            >
-              <option value="">Select Subcategory</option>
-              {subcategories.map((sub, i) => (
-                <option key={i} value={sub}>{sub}</option>
-              ))}
-            </select>
-            <input
-              className="border p-2 rounded"
-              placeholder="New Subcategory"
-              value={newSubcategory}
-              onChange={(e) => setNewSubcategory(e.target.value)}
-            />
-            <button type="button" onClick={handleAddSubcategory} className="bg-green-500 text-white px-2 rounded">Add</button>
-          </div>
+          <>
+            <div className="flex gap-2 mt-4">
+              <select
+                className="w-full border p-2 rounded"
+                value={form.subcategory || ""}
+                onChange={(e) => setForm({ ...form, subcategory: e.target.value })}
+                required
+              >
+                <option value="">Select Subcategory</option>
+                {subcategories.map((sub, i) => (
+                  <option key={i} value={sub}>
+                    {sub}
+                  </option>
+                ))}
+              </select>
+              <input
+                className="border p-2 rounded"
+                placeholder="New Subcategory"
+                value={newSubcategory}
+                onChange={(e) => setNewSubcategory(e.target.value)}
+              />
+              <button
+                type="button"
+                onClick={handleAddSubcategory}
+                className="bg-green-500 text-white px-2 rounded"
+              >
+                Add
+              </button>
+            </div>
+
+            <div className="mt-4">
+              <h3 className="font-semibold mb-2">
+                Subcategories in {form.category}
+              </h3>
+              <ul className="space-y-2">
+                {subcategories.map((sub, idx) => (
+                  <li key={idx} className="flex items-center gap-2">
+                    <span className="flex-1">{sub}</span>
+                    <button
+                      className="bg-red-500 text-white px-2 rounded text-sm"
+                      onClick={() => handleDeleteSubcategory(sub)}
+                    >
+                      Delete
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </>
         )}
 
         <label className="flex items-center space-x-2">
@@ -256,17 +347,25 @@ export default function AdminPage() {
         </button>
       </form>
 
-      {/* 🛍️ Display Products Section */}
       <div className="mt-10">
         <h2 className="text-2xl font-semibold mb-4">All Products</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {products.map((p) => (
-            <div key={p.id} className="bg-white border rounded-lg shadow-md p-4 space-y-3">
-              <img src={p.image} alt={p.title} className="w-full h-40 object-contain" />
+            <div
+              key={p.id}
+              className="bg-white border rounded-lg shadow-md p-4 space-y-3"
+            >
+              <img
+                src={p.image}
+                alt={p.title}
+                className="w-full h-40 object-contain"
+              />
               <h3 className="text-xl font-semibold">{p.title}</h3>
               <p className="text-sm text-gray-600">{p.description}</p>
               <p className="text-orange-600 font-bold">₹{p.price}</p>
-              <p className="text-sm text-gray-500">Category: {p.category || "N/A"}</p>
+              <p className="text-sm text-gray-500">
+                Category: {p.category || "N/A"}
+              </p>
               {p.bestSeller && (
                 <span className="inline-block bg-yellow-300 text-yellow-900 px-2 py-1 text-xs rounded">
                   🌟 Best Seller
