@@ -160,9 +160,7 @@ const Home = () => {
                     <p className="text-gray-600 text-sm mb-3">{product.description}</p>
                     <div className="flex justify-between items-center">
                       <span className="text-xl font-bold text-[#DA8616]">₹{product.price}</span>
-                      <button className="px-3 py-2 bg-[#DA8616] text-white text-sm rounded hover:bg-orange-600 transition-all">
-                        Add to Cart
-                      </button>
+                      
                     </div>
                   </div>
                 </div>
