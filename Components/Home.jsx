@@ -60,8 +60,7 @@ const Home = () => {
   const unsubscribe = onSnapshot(q, (snapshot) => {
     const items = snapshot.docs
       .map((doc) => ({ id: doc.id, ...doc.data() }))
-      .filter((item) => item.bestSeller === true)
-      .slice(0, 3); // Only 3 best sellers
+      .filter((item) => item.bestSeller === true);
     setProducts(items);
   });
 
@@ -123,26 +122,22 @@ const Home = () => {
           className="absolute inset-0 bg-[url('/Assets/modelbg.jpg')] bg-cover bg-bottom"
           data-scroll
           data-scroll-speed="-3"
-        ></div>
+        >
+          <div className="absolute inset-0 bg-gradient-to-b from-[#fff7e6]/80 to-[#ffe0b2]/60 z-10" />
+        </div>
 
         <div className="absolute top-0 right-0 w-screen z-30 p-4">
           <Navbar />
         </div>
 
         <div
-          className="relative z-10 flex flex-col items-center justify-center h-full text-center"
+          className="relative z-20 flex flex-col items-center justify-center h-full text-center"
           data-scroll
           data-scroll-speed="2"
         >
-          <h1 className={`${cinzel.className} text-5xl text-gray-600 font-bold mb-4`}>
-            Divine Offerings for Every Ritual
-          </h1>
-          <p className="text-lg mb-6 text-gray-500">
-            Explore handpicked pooja essentials delivered with care and devotion.
-          </p>
-          <button className="px-6 py-3 bg-[#DA8616] text-black rounded-md hover:text-white hover:bg-gray-700 hover:scale-110 transition-all">
-            Explore Now
-          </button>
+          <h1 className={`${cinzel.className} text-6xl text-[#b86c0e] drop-shadow-lg font-extrabold mb-4`}>Divine Offerings for Every Ritual</h1>
+          <p className="text-xl mb-8 text-[#b86c0e]/90 font-medium drop-shadow">Explore handpicked pooja essentials delivered with care and devotion.</p>
+          <button className="btn hover:scale-110">Explore Now</button>
         </div>
       </div>
 
@@ -154,36 +149,38 @@ const Home = () => {
           </a>
         </div>
 
-        <h2 className="text-center font-semibold text-3xl font-serif mb-[10vh]">Explore Our Categories</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4">
-          {categories.map((cat, index) => (
-            <Link key={cat.id} href={`/product?category=${encodeURIComponent(cat.name)}`}>
-              <div className="p-5 rounded-md shadow-lg text-center m-6 hover:scale-110 transition-all cursor-pointer bg-white">
-                <div className="text-5xl mb-4 font-thin">{cat.icon}</div>
-                <h3 className="text-3xl mb-3 font-semibold">{cat.name}</h3>
-                <p className="text-lg text-gray-500">{cat.desc}</p>
-              </div>
-            </Link>
-          ))}
+        <h2 className="text-center font-semibold text-4xl font-serif mb-[10vh] text-[#DA8616] drop-shadow">Explore Our Categories</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 justify-items-center">
+          {categories
+            .filter(cat => cat.name && cat.name.trim() !== '' && products.some(p => p.category === cat.name))
+            .map((cat, index) => (
+              <Link key={cat.id} href={`/product?category=${encodeURIComponent(cat.name)}`}>
+                <div className="w-[320px] h-[140px] flex flex-col items-center justify-center p-6 rounded-xl shadow-xl border border-[#4C8577] bg-[#EEFFDB] relative transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:border-[#618B4A] group">
+                  <div className="w-14 h-14 flex items-center justify-center rounded-full bg-[#4C8577] shadow-lg mb-2 border-2 border-[#618B4A] group-hover:scale-110 transition-transform">
+                    <span className="text-3xl text-white">{cat.icon}</span>
+                  </div>
+                  <h3 className="text-lg font-extrabold text-[#EAAC8B] tracking-widest uppercase font-serif group-hover:text-[#252627] transition-colors mt-1">{cat.name}</h3>
+                </div>
+              </Link>
+            ))}
         </div>
 
         <div className="mt-20 px-4">
-          <h3 className="text-center font-semibold text-2xl font-serif mb-12">Featured Products</h3>
-          <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
+          <h3 className="text-center font-semibold text-3xl font-serif mb-12 text-[#DA8616]">Featured Products</h3>
+          <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
             {products.length === 0 ? (
               <p className="text-center col-span-3">No products found.</p>
             ) : (
               products.map((product) => (
-                <div key={product.id} className="bg-white rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all">
-                  <div className="h-40 bg-gradient-to-br from-orange-200 to-yellow-200 flex items-center justify-center">
+                <div key={product.id} className="bg-white rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl hover:scale-105 transition-all border border-[#ffe0b2]">
+                  <div className="h-44 bg-gradient-to-br from-orange-200 to-yellow-200 flex items-center justify-center">
                     <img src={product.image} alt={product.title} className="h-full object-contain" />
                   </div>
-                  <div className="p-5">
-                    <h4 className="text-lg font-semibold mb-2">{product.title}</h4>
-                    <p className="text-gray-600 text-sm mb-3">{product.description}</p>
+                  <div className="p-6">
+                    <h4 className="text-xl font-bold mb-2 text-[#DA8616]">{product.title}</h4>
+                    <p className="text-gray-600 text-base mb-3">{product.description}</p>
                     <div className="flex justify-between items-center">
-                      <span className="text-xl font-bold text-[#DA8616]">₹{product.price}</span>
-                      
+                      <span className="text-2xl font-bold text-[#DA8616]">₹{product.price}</span>
                     </div>
                   </div>
                 </div>
@@ -193,14 +190,14 @@ const Home = () => {
         </div>
 
         <div className="mt-20 px-4">
-          <h3 className="text-center font-semibold text-2xl font-serif mb-12">Why Choose Us</h3>
+          <h3 className="text-center font-semibold text-2xl font-serif mb-12 text-[#DA8616]">Why Choose Us</h3>
           <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
             {reasons.map((reason) => (
               <div key={reason.id} className="text-center">
-                <div className="w-16 h-16 bg-[#DA8616] rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="w-16 h-16 bg-[#DA8616] rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
                   <span className="text-2xl text-white">{reason.icon}</span>
                 </div>
-                <h4 className="text-xl font-semibold mb-3">{reason.title}</h4>
+                <h4 className="text-xl font-semibold mb-3 text-[#DA8616]">{reason.title}</h4>
                 <p className="text-gray-600">{reason.description}</p>
               </div>
             ))}
@@ -208,13 +205,11 @@ const Home = () => {
         </div>
 
         {/* Footer */}
-        <footer className="bg-[#DA8616] text-black py-10 mt-20 min-h-[200px]">
+        <footer className="bg-gradient-to-r from-[#DA8616] to-[#ffb347] text-black py-12 mt-20 min-h-[200px] shadow-inner rounded-t-2xl">
           <div className="max-w-6xl mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
               <h4 className="text-xl font-bold mb-4">About Us</h4>
-              <p className="text-sm text-black/80">
-                We offer authentic and blessed pooja essentials to make your rituals more divine and meaningful.
-              </p>
+              <p className="text-sm text-black/80">We offer authentic and blessed pooja essentials to make your rituals more divine and meaningful.</p>
             </div>
             <div>
               <h4 className="text-xl font-bold mb-4">Quick Links</h4>
@@ -236,9 +231,9 @@ const Home = () => {
             </div>
             <div>
               <h4 className="text-xl font-bold mb-4">Contact Us</h4>
-              <p className="text-sm text-black/80">📞 +91 9876543210</p>
-              <p className="text-sm text-black/80">📧 support@divinestore.in</p>
-              <p className="text-sm text-black/80 mt-2">📍 Karur, Tamil Nadu</p>
+              <p className="text-sm text-black/80">  +91 9876543210</p>
+              <p className="text-sm text-black/80">  support@divinestore.in</p>
+              <p className="text-sm text-black/80 mt-2">  Karur, Tamil Nadu</p>
             </div>
           </div>
           <div className="text-center text-sm text-black/70 mt-10 border-t border-black/20 pt-4">

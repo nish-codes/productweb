@@ -12,6 +12,7 @@ import {
   serverTimestamp,
   query,
   orderBy,
+  getDocs,
 } from 'firebase/firestore';
 import { uploadToCloudinary } from '../../utils/cloudinary';
 
@@ -20,6 +21,7 @@ export default function AdminPage() {
   const [products, setProducts] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [image, setImage] = useState('');
+  const [existingImage, setExistingImage] = useState('');
   const [title, setTitle] = useState('');
   const [price, setPrice] = useState('');
   const [category, setCategory] = useState('');
@@ -27,6 +29,7 @@ export default function AdminPage() {
   const [categories, setCategories] = useState([]);
   const [subcategories, setSubcategories] = useState([]);
   const [editingId, setEditingId] = useState(null);
+  const [bestSeller, setBestSeller] = useState(false);
 
   // Fetch products
   useEffect(() => {
@@ -63,17 +66,22 @@ export default function AdminPage() {
   const handleAddOrUpdateProduct = async () => {
     if (!title || !price || !category || !subcategory) return alert('All fields required');
 
-    const imgURL = image ? await uploadToCloudinary(image) : null;
+    let imgURL = existingImage;
+    if (image) {
+      imgURL = await uploadToCloudinary(image);
+    }
 
     // Auto-increment customId
     const q = query(productsCollection, orderBy('customId', 'desc'));
-    const snap = await onSnapshot(q, () => {});
+    const snap = await getDocs(q);
     let newId = 1;
-    if (snap && !snap.empty) {
+    if (!snap.empty) {
       newId = snap.docs[0].data().customId + 1;
     }
 
     // Add category if doesn't exist
+    const catSnap = await getDocs(categoriesCollection);
+    const catDocs = catSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
     if (!categories.includes(category)) {
       await addDoc(categoriesCollection, {
         name: category,
@@ -82,10 +90,10 @@ export default function AdminPage() {
       });
     } else {
       // Add subcategory if missing
-      const catDoc = snap.docs.find((doc) => doc.data().name === category);
+      const catDoc = catDocs.find((doc) => doc.name === category);
       if (catDoc) {
         const catRef = doc(db, 'categories', catDoc.id);
-        const existingSubs = catDoc.data().subcategories || [];
+        const existingSubs = catDoc.subcategories || [];
         if (!existingSubs.includes(subcategory)) {
           await updateDoc(catRef, {
             subcategories: [...existingSubs, subcategory],
@@ -94,21 +102,24 @@ export default function AdminPage() {
       }
     }
 
-    const productData = {
+    let productData = {
       title,
       price: parseFloat(price),
       category,
       subcategory,
       image: imgURL,
-      customId: editingId ? undefined : newId,
       createdAt: serverTimestamp(),
+      bestSeller,
     };
 
     if (editingId) {
       const productRef = doc(db, 'products', editingId);
       await updateDoc(productRef, productData);
+      alert('Product updated');
     } else {
+      productData.customId = newId;
       await addDoc(productsCollection, productData);
+      alert('Product added');
     }
 
     setTitle('');
@@ -116,7 +127,9 @@ export default function AdminPage() {
     setCategory('');
     setSubcategory('');
     setImage('');
+    setExistingImage('');
     setEditingId(null);
+    setBestSeller(false);
   };
 
   const handleEdit = (prod) => {
@@ -125,7 +138,9 @@ export default function AdminPage() {
     setCategory(prod.category);
     setSubcategory(prod.subcategory);
     setImage('');
+    setExistingImage(prod.image || '');
     setEditingId(prod.id);
+    setBestSeller(!!prod.bestSeller);
     setActiveTab('add');
   };
 
@@ -164,21 +179,23 @@ export default function AdminPage() {
           <input
             type="text"
             placeholder="Search by name or ID"
-            className="mb-4 p-2 border w-full"
+            className="mb-4 p-2 border w-full rounded shadow"
             onChange={(e) => setSearchTerm(e.target.value)}
           />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
             {filteredProducts.map((prod) => (
-              <div key={prod.id} className="border p-4 shadow rounded">
-                <p><strong>ID:</strong> {prod.customId}</p>
-                <p><strong>Title:</strong> {prod.title}</p>
-                <p><strong>Price:</strong> ₹{prod.price}</p>
-                <p><strong>Category:</strong> {prod.category}</p>
-                <p><strong>Subcategory:</strong> {prod.subcategory}</p>
-                {prod.image && <img src={prod.image} className="w-full h-32 object-cover mt-2" />}
-                <div className="flex gap-2 mt-3">
-                  <button onClick={() => handleEdit(prod)} className="text-blue-600">Edit</button>
-                  <button onClick={() => handleDelete(prod.id)} className="text-red-600">Delete</button>
+              <div key={prod.id} className="bg-white/80 border border-[#ffe0b2] rounded-2xl shadow-lg p-5 flex flex-col gap-2 items-start hover:shadow-2xl transition-all">
+                <div className="flex-1 w-full">
+                  <p className="text-xs text-gray-500 mb-1"><span className="font-bold text-[#b86c0e]">ID:</span> {prod.customId}</p>
+                  <p className="text-lg font-bold text-[#DA8616] mb-1">{prod.title}</p>
+                  <p className="text-base font-semibold text-[#618B4A] mb-1">₹{prod.price}</p>
+                  <p className="text-sm font-semibold text-[#4C8577] mb-1">Category: <span className="font-normal text-gray-700">{prod.category}</span></p>
+                  <p className="text-sm font-semibold text-[#4C8577] mb-2">Subcategory: <span className="font-normal text-gray-700">{prod.subcategory}</span></p>
+                  {prod.image && <img src={prod.image} className="w-full h-32 object-cover rounded-lg border border-[#EAAC8B] mb-2 bg-white" alt={prod.title} />}
+                </div>
+                <div className="flex gap-3 w-full mt-2">
+                  <button onClick={() => handleEdit(prod)} className="flex-1 bg-[#4C8577] text-white font-semibold py-2 rounded-lg shadow hover:bg-[#618B4A] transition-all">Edit</button>
+                  <button onClick={() => handleDelete(prod.id)} className="flex-1 bg-[#EAAC8B] text-white font-semibold py-2 rounded-lg shadow hover:bg-[#b86c0e] transition-all">Delete</button>
                 </div>
               </div>
             ))}
@@ -221,6 +238,17 @@ export default function AdminPage() {
             onChange={(e) => setImage(e.target.files[0])}
             className="border p-2 w-full"
           />
+          {existingImage && !image && (
+            <img src={existingImage} alt="Current" className="w-full h-32 object-cover rounded-lg border border-[#EAAC8B] mb-2 bg-white" />
+          )}
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={bestSeller}
+              onChange={e => setBestSeller(e.target.checked)}
+            />
+            Featured Product
+          </label>
           <button onClick={handleAddOrUpdateProduct} className="bg-green-600 text-white px-4 py-2 rounded">
             {editingId ? 'Update Product' : 'Add Product'}
           </button>
