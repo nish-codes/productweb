@@ -18,3 +18,5 @@ export const auth = getAuth(app);
 export const provider = new GoogleAuthProvider();
 export const db = getFirestore(app);
 export const categoriesCollection = collection(getFirestore(app), "categories");
+export const productsCollection = collection(db, "products");
+export const subcategoriesCollection = collection(db, "subcategories");
