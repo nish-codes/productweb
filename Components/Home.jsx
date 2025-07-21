@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useLayoutEffect } from "react";
 import Navbar from "./Navbar";
 import { Cinzel } from "next/font/google";
+import { Geist } from "next/font/google";
 import "locomotive-scroll/dist/locomotive-scroll.css";
 import { FaWhatsapp } from "react-icons/fa";
 import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
@@ -13,6 +14,8 @@ const cinzel = Cinzel({
   subsets: ["latin"],
   weight: ["400", "700"],
 });
+
+const geist = Geist({ subsets: ["latin"], weight: ["400", "700"] });
 
 const defaultIcons = ["🪔", "🧘‍♂️", "🙏", "🌺", "🕉️", "🚚", "❤️", "🌸", "🛕", "🧿", "🪔"];
 const defaultDescs = [
@@ -52,8 +55,8 @@ const reasons = [
 const Home = () => {
   const scrollRef = useRef(null);
   const [products, setProducts] = useState([]);
-  const [scrollInstance, setScrollInstance] = useState(null);
   const [categories, setCategories] = useState([]);
+  const scrollInstance = useRef(null);
 
  useEffect(() => {
   const q = query(collection(db, "products"), orderBy("createdAt", "desc"));
@@ -67,9 +70,9 @@ const Home = () => {
   return () => unsubscribe();
 }, []);
 
-  useEffect(() => {
+  // Locomotive Scroll setup (useLayoutEffect for layout stability)
+  useLayoutEffect(() => {
     if (!scrollRef.current) return;
-
     let scroll;
     import("locomotive-scroll").then((LocomotiveScroll) => {
       scroll = new LocomotiveScroll.default({
@@ -77,29 +80,25 @@ const Home = () => {
         smooth: true,
         multiplier: 1,
         lerp: 0.1,
-        smartphone: {
-          smooth: true,
-        },
-        tablet: {
-          smooth: true,
-        },
+        smartphone: { smooth: true },
+        tablet: { smooth: true },
       });
-      setScrollInstance(scroll);
+      scrollInstance.current = scroll;
     });
-
     return () => {
-      if (scroll) scroll.destroy();
+      if (scrollInstance.current) {
+        scrollInstance.current.destroy();
+        scrollInstance.current = null;
+      }
     };
   }, []);
 
-  // Update Locomotive Scroll when products change
+  // Update Locomotive Scroll when products/categories change
   useEffect(() => {
-    if (scrollInstance) {
-      setTimeout(() => {
-        scrollInstance.update();
-      }, 100);
+    if (scrollInstance.current) {
+      scrollInstance.current.update();
     }
-  }, [products, categories, scrollInstance]);
+  }, [products, categories]);
 
   useEffect(() => {
     const unsub = onSnapshot(categoriesCollection, (snapshot) => {
@@ -149,20 +148,26 @@ const Home = () => {
           </a>
         </div>
 
-        <h2 className="text-center font-semibold text-4xl font-serif mb-[10vh] text-[#DA8616] drop-shadow">Explore Our Categories</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 justify-items-center">
-          {categories
-            .filter(cat => cat.name && cat.name.trim() !== '' && products.some(p => p.category === cat.name))
-            .map((cat, index) => (
-              <Link key={cat.id} href={`/product?category=${encodeURIComponent(cat.name)}`}>
-                <div className="w-[320px] h-[140px] flex flex-col items-center justify-center p-6 rounded-xl shadow-xl border border-[#4C8577] bg-[#EEFFDB] relative transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:border-[#618B4A] group">
-                  <div className="w-14 h-14 flex items-center justify-center rounded-full bg-[#4C8577] shadow-lg mb-2 border-2 border-[#618B4A] group-hover:scale-110 transition-transform">
-                    <span className="text-3xl text-white">{cat.icon}</span>
+        <h2 className="text-center font-semibold text-4xl mb-[10vh] text-[#DA8616] drop-shadow">Explore Our Categories</h2>
+        <div className="flex justify-center items-center w-full overflow-x-auto pb-4">
+          <div className="flex flex-row gap-8">
+            {categories
+              .filter(cat => cat.name && cat.name.trim() !== '')
+              .map((cat, index) => (
+                <Link key={cat.id} href={`/product?category=${encodeURIComponent(cat.name)}`}>
+                  <div className="w-72 h-72 bg-white flex flex-col items-center justify-center p-6 rounded-2xl shadow-sm border border-[#ffe0b2] transition-all duration-300 hover:scale-105 hover:shadow-md group min-w-[18rem]">
+                    <div className="w-28 h-28 flex items-center justify-center rounded-full bg-white shadow-sm mb-6 border-4 border-[#ffe0b2] overflow-hidden">
+                      {cat.image ? (
+                        <img src={cat.image} alt={cat.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="text-5xl text-[#DA8616]">{cat.icon}</span>
+                      )}
+                    </div>
+                    <h3 className={`${geist.className} text-2xl font-bold text-[#b86c0e] group-hover:text-[#DA8616] transition-colors mt-2 text-center`}>{cat.name}</h3>
                   </div>
-                  <h3 className="text-lg font-extrabold text-[#EAAC8B] tracking-widest uppercase font-serif group-hover:text-[#252627] transition-colors mt-1">{cat.name}</h3>
-                </div>
-              </Link>
-            ))}
+                </Link>
+              ))}
+          </div>
         </div>
 
         <div className="mt-20 px-4">

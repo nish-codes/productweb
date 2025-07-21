@@ -17,6 +17,7 @@ import {
   db,
 } from '../../firebase/config';
 import { uploadToCloudinary } from '../../utils/cloudinary';
+import Link from 'next/link';
 
 export default function AdminPage() {
   const [tab, setTab] = useState('view');
@@ -39,6 +40,15 @@ export default function AdminPage() {
 
   const [uploading, setUploading] = useState(false);
   const [message, setMessage] = useState('');
+
+  // Add state for category image upload
+  const [catImgFile, setCatImgFile] = useState(null);
+  const [catImgUploading, setCatImgUploading] = useState(false);
+  const [catImgPreview, setCatImgPreview] = useState("");
+
+  // Limit for categories
+  const maxCategories = 5;
+  const categoryLimitReached = categories.length >= maxCategories;
 
   // Live updates
   useEffect(() => {
@@ -77,6 +87,12 @@ export default function AdminPage() {
 
     if (!title.trim() || !price || !finalCat || !finalSub) {
       return alert('Fill all fields!');
+    }
+
+    if (newCategory.trim() && categoryLimitReached && !categories.some(c => c.name.toLowerCase() === newCategory.trim().toLowerCase())) {
+      alert('You can only have a maximum of 5 categories.');
+      setUploading(false);
+      return;
     }
 
     setUploading(true);
@@ -156,16 +172,22 @@ export default function AdminPage() {
     `${p.customId}`.includes(search)
   );
 
+  // Count featured products
+  const featuredCount = products.filter(p => p.bestSeller && (!editingId || p.id !== editingId)).length;
+
   return (
     <div className="p-6 mx-auto max-w-4xl space-y-6">
-      <nav className="flex gap-4">
-        <button onClick={() => { resetForm(); setTab('view'); }}
-          className={`px-4 py-2 rounded ${tab==='view' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}>View Products</button>
-        <button onClick={() => { resetForm(); setTab('add'); }}
-          className={`px-4 py-2 rounded ${tab==='add' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}>Add / Edit Product</button>
-        <button onClick={() => setTab('cat')}
-          className={`px-4 py-2 rounded ${tab==='cat' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}>Manage Categories</button>
-      </nav>
+      <div className="flex justify-between items-center mb-4">
+        <Link href="/" className="text-[#b86c0e] font-bold text-lg bg-white px-4 py-2 rounded shadow hover:bg-[#ffe0b2] transition-colors">Home</Link>
+        <nav className="flex gap-4">
+          <button onClick={() => { resetForm(); setTab('view'); }}
+            className={`px-4 py-2 rounded ${tab==='view' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}>View Products</button>
+          <button onClick={() => { resetForm(); setTab('add'); }}
+            className={`px-4 py-2 rounded ${tab==='add' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}>Add / Edit Product</button>
+          <button onClick={() => setTab('cat')}
+            className={`px-4 py-2 rounded ${tab==='cat' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}>Manage Categories</button>
+        </nav>
+      </div>
 
       {message && <p className="bg-green-100 text-green-800 text-center p-2 rounded">{message}</p>}
 
@@ -206,7 +228,8 @@ export default function AdminPage() {
               </div>
               <div><label>Add New Category</label>
                 <input value={newCategory}
-                  onChange={e=>{setNewCategory(e.target.value);setCategory('')}} placeholder="New category" className="w-full p-2 border rounded" />
+                  onChange={e=>{setNewCategory(e.target.value);setCategory('')}} placeholder="New category" className="w-full p-2 border rounded" disabled={categoryLimitReached} />
+                {categoryLimitReached && <p className="text-xs text-red-500 mt-1">Maximum 5 categories allowed.</p>}
               </div>
             </div>
 
@@ -227,7 +250,9 @@ export default function AdminPage() {
             </div>
 
             <label>
-              <input type="checkbox" checked={bestSeller} onChange={e=>setBestSeller(e.target.checked)} /> Feature Product
+              <input type="checkbox" checked={bestSeller} onChange={e=>setBestSeller(e.target.checked)}
+                disabled={!bestSeller && featuredCount >= 3}
+              /> Feature Product
             </label>
             <button onClick={handleSaveProduct} className="w-full bg-blue-600 text-white py-2 rounded">
               {editingId ? 'Update Product' : 'Add Product'}
@@ -240,12 +265,26 @@ export default function AdminPage() {
       {tab === 'cat' && (
         <div className="bg-white p-4 rounded shadow space-y-4">
           {categories.map(cat => (
-            <div key={cat.id} className="flex items-start justify-between gap-2">
-              <input defaultValue={cat.name}
-                onBlur={e=>updateDoc(doc(db, 'categories', cat.id), { name: e.target.value.trim() })}
-                className="flex-1 p-2 border rounded" />
+            <div key={cat.id} className="flex flex-col md:flex-row items-start md:items-center justify-between gap-2 border-b pb-4 mb-2">
+              <div className="flex-1 flex flex-col md:flex-row gap-2 items-center">
+                <input defaultValue={cat.name}
+                  onBlur={e=>updateDoc(doc(db, 'categories', cat.id), { name: e.target.value.trim() })}
+                  className="flex-1 p-2 border rounded" />
+                {/* Image preview */}
+                {cat.image && <img src={cat.image} alt="" className="h-12 w-12 object-cover rounded border ml-2" />}
+                {/* Image upload */}
+                <input type="file" accept="image/*" onChange={async e => {
+                  const file = e.target.files[0];
+                  if (!file) return;
+                  setCatImgUploading(true);
+                  const url = await uploadToCloudinary(file);
+                  await updateDoc(doc(db, 'categories', cat.id), { image: url });
+                  setCatImgUploading(false);
+                }} className="ml-2" />
+                {catImgUploading && <span className="text-xs text-blue-600 ml-2">Uploading…</span>}
+              </div>
               <button onClick={()=> deleteDoc(doc(db,'categories',cat.id))}
-                className="bg-red-500 text-white px-3 py-1 rounded">Delete</button>
+                className="bg-red-500 text-white px-3 py-1 rounded mt-2 md:mt-0">Delete</button>
             </div>
           ))}
         </div>
