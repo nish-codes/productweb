@@ -123,7 +123,7 @@ const Home = () => {
           data-scroll
           data-scroll-speed="-3"
         >
-          <div className="absolute inset-0 bg-gradient-to-b from-[#fff7e6]/80 to-[#ffe0b2]/60 z-10" />
+          
         </div>
 
         <div className="absolute top-0 right-0 w-screen z-30 p-4">
@@ -205,42 +205,44 @@ const Home = () => {
         </div>
 
         {/* Footer */}
-        <footer className="bg-gradient-to-r from-[#DA8616] to-[#ffb347] text-black py-12 mt-20 min-h-[200px] shadow-inner rounded-t-2xl">
-          <div className="max-w-6xl mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div>
-              <h4 className="text-xl font-bold mb-4">About Us</h4>
-              <p className="text-sm text-black/80">We offer authentic and blessed pooja essentials to make your rituals more divine and meaningful.</p>
-            </div>
-            <div>
-              <h4 className="text-xl font-bold mb-4">Quick Links</h4>
-              <ul className="space-y-2 text-sm">
-                <li><a href="#" className="hover:underline">Home</a></li>
-                <li><a href="#" className="hover:underline">Products</a></li>
-                <li><a href="#" className="hover:underline">Categories</a></li>
-                <li><a href="#" className="hover:underline">Contact</a></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="text-xl font-bold mb-4">Customer Care</h4>
-              <ul className="space-y-2 text-sm">
-                <li><a href="#" className="hover:underline">FAQs</a></li>
-                <li><a href="#" className="hover:underline">Shipping</a></li>
-                <li><a href="#" className="hover:underline">Returns</a></li>
-                <li><a href="#" className="hover:underline">Terms & Conditions</a></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="text-xl font-bold mb-4">Contact Us</h4>
-              <p className="text-sm text-black/80">  +91 9876543210</p>
-              <p className="text-sm text-black/80">  support@divinestore.in</p>
-              <p className="text-sm text-black/80 mt-2">  Karur, Tamil Nadu</p>
-            </div>
-          </div>
-          <div className="text-center text-sm text-black/70 mt-10 border-t border-black/20 pt-4">
-            &copy; {new Date().getFullYear()} DivineStore. All rights reserved.
-          </div>
-        </footer>
+         
       </div>
+    <footer data-scroll-section className="w-full bg-gradient-to-r from-[#DA8616] to-[#ffb347] text-black pt-12 pb-6 shadow-inner">
+        <div className="max-w-6xl mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div>
+            <h4 className="text-xl font-bold mb-4">About Us</h4>
+            <p className="text-sm text-black/80">We offer authentic and blessed pooja essentials to make your rituals more divine and meaningful.</p>
+          </div>
+          <div>
+            <h4 className="text-xl font-bold mb-4">Quick Links</h4>
+            <ul className="space-y-2 text-sm">
+              <li><a href="/" className="hover:underline">Home</a></li>
+              <li><a href="/product" className="hover:underline">Products</a></li>
+              <li><a href="/#categories" className="hover:underline">Categories</a></li>
+              <li><a href="/#contact" className="hover:underline">Contact</a></li>
+            </ul>
+          </div>
+          <div>
+            <h4 className="text-xl font-bold mb-4">Customer Care</h4>
+            <ul className="space-y-2 text-sm">
+              <li><a href="#" className="hover:underline">FAQs</a></li>
+              <li><a href="#" className="hover:underline">Shipping</a></li>
+              <li><a href="#" className="hover:underline">Returns</a></li>
+              <li><a href="#" className="hover:underline">Terms & Conditions</a></li>
+            </ul>
+          </div>
+          <div>
+            <h4 className="text-xl font-bold mb-4">Contact Us</h4>
+            <p className="text-sm text-black/80">+91 9876543210</p>
+            <p className="text-sm text-black/80">support@divinestore.in</p>
+            <p className="text-sm text-black/80 mt-2">Karur, Tamil Nadu</p>
+          </div>
+        </div>
+
+        <div className="mt-10 border-t border-black/20 pt-4 text-center text-sm text-black/70">
+          &copy; {new Date().getFullYear()} Young Mynds Infotech. All rights reserved.
+        </div>
+      </footer>
     </div>
   );
 };
