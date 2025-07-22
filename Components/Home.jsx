@@ -165,9 +165,15 @@ const Home = () => {
       {/* Main Content Section */}
       <div data-scroll-section className="bg-[#FAF3E0] py-8 relative">
         <div className="fixed top-1/2 right-5 z-50">
-          <a href="https://wa.me/919876543210" target="_blank" rel="noopener noreferrer">
-            <FaWhatsapp className="text-green-500 text-5xl hover:scale-110 transition-transform duration-200" />
-          </a>
+           <a
+      href="https://wa.me/919876543210"
+      target="_blank"
+      rel="noopener noreferrer"
+      className="fixed bottom-5 right-5 bg-green-500 text-white p-4 rounded-full shadow-lg hover:scale-110 transition-transform duration-300 z-50"
+      title="Chat on WhatsApp"
+    >
+      <FaWhatsapp className="text-2xl" />
+    </a>
         </div>
 
         <h2 className="text-center font-semibold text-4xl mb-[10vh] text-[#DA8616] drop-shadow">Explore Our Categories</h2>
@@ -195,7 +201,7 @@ const Home = () => {
 </div>
 
 
-        <div className="mt-20 px-4">
+        <div className="mt-10 px-4">
           <h3 className="text-center font-semibold text-3xl font-serif mb-12 text-[#DA8616]">Featured Products</h3>
           <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
             {products.length === 0 ? (
@@ -219,7 +225,7 @@ const Home = () => {
           </div>
         </div>
 
-        <div className="mt-30  px-4">
+        <div className="mt-35  px-4">
           <h3 className="text-center font-semibold text-2xl font-serif mb-12 text-[#DA8616]">Why Choose Us</h3>
           <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
             {reasons.map((reason) => (
