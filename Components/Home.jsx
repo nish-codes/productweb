@@ -36,19 +36,19 @@ const reasons = [
     id: 1,
     icon: "🕉️",
     title: "Authentic Products",
-    description: "Every item is carefully sourced and blessed to maintain its spiritual sanctity",
+   
   },
   {
     id: 2,
     icon: "🚚",
     title: "Fast Delivery",
-    description: "Your devotional needs delivered with care, ensuring perfect timing for rituals",
+  
   },
   {
     id: 3,
     icon: "❤️",
     title: "Made with Love",
-    description: "Each product is crafted with devotion and blessed for your spiritual well-being",
+  
   },
 ];
 
@@ -136,7 +136,29 @@ const Home = () => {
         >
           <h1 className={`${cinzel.className} text-6xl text-[#b86c0e] drop-shadow-lg font-extrabold mb-4`}>Divine Offerings for Every Ritual</h1>
           <p className="text-xl mb-8 text-[#b86c0e]/90 font-medium drop-shadow">Explore handpicked pooja essentials delivered with care and devotion.</p>
-          <button className="btn hover:scale-110">Explore Now</button>
+          
+
+<Link href="/product">
+  <button className="btn flex items-center gap-2 hover:scale-110 transition-transform duration-300">
+    Explore Now
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      className="w-5 h-5"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth={2}
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M5 19L19 5M6 5h13v13"
+      />
+    </svg>
+  </button>
+</Link>
+
+
         </div>
       </div>
 
@@ -149,26 +171,29 @@ const Home = () => {
         </div>
 
         <h2 className="text-center font-semibold text-4xl mb-[10vh] text-[#DA8616] drop-shadow">Explore Our Categories</h2>
-        <div className="flex justify-center items-center w-full overflow-x-auto pb-4">
-          <div className="flex flex-row gap-8">
-            {categories
-              .filter(cat => cat.name && cat.name.trim() !== '')
-              .map((cat, index) => (
-                <Link key={cat.id} href={`/product?category=${encodeURIComponent(cat.name)}`}>
-                  <div className="w-72 h-72 bg-white flex flex-col items-center justify-center p-6 rounded-2xl shadow-sm border border-[#ffe0b2] transition-all duration-300 hover:scale-105 hover:shadow-md group min-w-[18rem]">
-                    <div className="w-28 h-28 flex items-center justify-center rounded-full bg-white shadow-sm mb-6 border-4 border-[#ffe0b2] overflow-hidden">
-                      {cat.image ? (
-                        <img src={cat.image} alt={cat.name} className="w-full h-full object-cover" />
-                      ) : (
-                        <span className="text-5xl text-[#DA8616]">{cat.icon}</span>
-                      )}
-                    </div>
-                    <h3 className={`${geist.className} text-2xl font-bold text-[#b86c0e] group-hover:text-[#DA8616] transition-colors mt-2 text-center`}>{cat.name}</h3>
-                  </div>
-                </Link>
-              ))}
+        <div className="w-full px-4 py-6">
+  <div className="flex flex-wrap justify-center gap-6 max-w-7xl mx-auto">
+    {categories
+      .filter((cat) => cat.name && cat.name.trim() !== "")
+      .map((cat) => (
+        <Link key={cat.id} href={`/product?category=${encodeURIComponent(cat.name)}`}>
+          <div className="w-64 bg-white flex flex-col items-center justify-center p-6 rounded-2xl shadow-sm border border-[#ffe0b2] transition-all duration-300 hover:scale-105 hover:shadow-md group">
+            <div className="w-40 h-40 flex items-center justify-center rounded-2xl bg-white shadow-sm mb-6 border-4 border-[#ffe0b2] overflow-hidden">
+              {cat.image ? (
+                <img src={cat.image} alt={cat.name} className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-5xl text-[#DA8616]">{cat.icon}</span>
+              )}
+            </div>
+            <h3 className="text-2xl font-bold text-[#b86c0e] group-hover:text-[#DA8616] transition-colors mt-2 text-center  ${cinzel.className}">
+              {cat.name}
+            </h3>
           </div>
-        </div>
+        </Link>
+      ))}
+  </div>
+</div>
+
 
         <div className="mt-20 px-4">
           <h3 className="text-center font-semibold text-3xl font-serif mb-12 text-[#DA8616]">Featured Products</h3>
@@ -194,7 +219,7 @@ const Home = () => {
           </div>
         </div>
 
-        <div className="mt-20 px-4">
+        <div className="mt-30  px-4">
           <h3 className="text-center font-semibold text-2xl font-serif mb-12 text-[#DA8616]">Why Choose Us</h3>
           <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
             {reasons.map((reason) => (
@@ -203,7 +228,7 @@ const Home = () => {
                   <span className="text-2xl text-white">{reason.icon}</span>
                 </div>
                 <h4 className="text-xl font-semibold mb-3 text-[#DA8616]">{reason.title}</h4>
-                <p className="text-gray-600">{reason.description}</p>
+               
               </div>
             ))}
           </div>
@@ -212,7 +237,7 @@ const Home = () => {
         {/* Footer */}
          
       </div>
-    <footer data-scroll-section className="w-full bg-gradient-to-r from-[#DA8616] to-[#ffb347] text-black pt-12 pb-6 shadow-inner">
+    <footer data-scroll-section className="w-full bg-gradient-to-r from-[#DA8616] to-[#ffb347] text-black pt-12 pb-6 shadow-inner ">
         <div className="max-w-6xl mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
             <h4 className="text-xl font-bold mb-4">About Us</h4>

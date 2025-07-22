@@ -79,7 +79,7 @@ export default function ProductPage() {
 
   return (
     <>
-      <Navbar className="products-navbar" />
+     
       <div className="p-6 max-w-7xl mx-auto min-h-screen" style={{ background: 'linear-gradient(135deg, #fff7e6 0%, #ffe0b2 100%)' }}>
         <h1 className="text-3xl font-bold text-center mb-6">Our Products</h1>
 
