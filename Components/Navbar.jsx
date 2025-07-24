@@ -64,7 +64,7 @@ const Navbar = ({ isHome, hidden, className = "" }) => {
       >
         <li
           className={`cursor-pointer ${
-            isProducts ? "text-[#b86c0e]" : "text-[#b86c0e] md:text-white"
+            isProducts ? "text-[#b86c0e]" : "text-[#b86c0e] md:text-orange-400 text-lg "
           } hover:text-[#252627] transition-colors`}
         >
           Home
@@ -72,26 +72,26 @@ const Navbar = ({ isHome, hidden, className = "" }) => {
         <Link
           href="/product"
           className={`cursor-pointer ${
-            isProducts ? "text-[#b86c0e]" : "text-[#b86c0e] md:text-white"
+            isProducts ? "text-[#b86c0e]" : "text-[#b86c0e] md:text-orange-400 text-lg "
           } hover:text-[#252627] transition-colors`}
         >
           Products
         </Link>
         <li
           className={`cursor-pointer ${
-            isProducts ? "text-[#b86c0e]" : "text-[#b86c0e] md:text-white"
+            isProducts ? "text-[#b86c0e]" : "text-[#b86c0e]  md:text-orange-400 text-lg "
           } hover:text-[#252627] transition-colors`}
         >
           Contact us
         </li>
-        <Link
+        {/* <Link
           href="/login"
           className={`bg-white ${
             isProducts ? "text-[#DA8616]" : "text-[#EAAC8B]"
           } font-semibold px-4 py-2 rounded shadow hover:bg-[#252627] hover:text-white transition-colors`}
         >
           Admin Login
-        </Link>
+        </Link> */}
       </ul>
     </div>
   );

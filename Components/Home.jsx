@@ -201,7 +201,7 @@ const Home = () => {
 </div>
 
 
-        <div className="mt-10 px-4">
+        <div className="mt-20 px-4">
           <h3 className="text-center font-semibold text-3xl font-serif mb-12 text-[#DA8616]">Featured Products</h3>
           <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
             {products.length === 0 ? (
@@ -225,7 +225,7 @@ const Home = () => {
           </div>
         </div>
 
-        <div className="mt-35  px-4">
+        <div className="mt-20  px-4">
           <h3 className="text-center font-semibold text-2xl font-serif mb-12 text-[#DA8616]">Why Choose Us</h3>
           <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
             {reasons.map((reason) => (
