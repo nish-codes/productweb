@@ -34,21 +34,27 @@ const defaultDescs = [
 const reasons = [
   {
     id: 1,
-    icon: "🕉️",
+    icon: "✨",
     title: "Authentic Products",
-   
+    description: "Blessed and genuine pooja items"
   },
   {
     id: 2,
-    icon: "🚚",
-    title: "Fast Delivery",
-  
+    icon: "⚡",
+    title: "Lightning Fast Delivery",
+    description: "Quick and reliable shipping"
   },
   {
     id: 3,
-    icon: "❤️",
-    title: "Made with Love",
-  
+    icon: "🌟",
+    title: "Divine Quality",
+    description: "Handpicked with devotion"
+  },
+  {
+    id: 4,
+    icon: "🛡️",
+    title: "Trusted Service",
+    description: "Your spiritual journey partner"
   },
 ];
 
@@ -164,41 +170,30 @@ const Home = () => {
 
       {/* Main Content Section */}
       <div data-scroll-section className="bg-[#FAF3E0] py-8 relative">
-        <div className="fixed top-1/2 right-5 z-50">
-           <a
-      href="https://wa.me/919876543210"
-      target="_blank"
-      rel="noopener noreferrer"
-      className="fixed bottom-5 right-5 bg-green-500 text-white p-4 rounded-full shadow-lg hover:scale-110 transition-transform duration-300 z-50"
-      title="Chat on WhatsApp"
-    >
-      <FaWhatsapp className="text-2xl" />
-    </a>
-        </div>
 
         <h2 className="text-center font-semibold text-4xl mb-[10vh] text-[#DA8616] drop-shadow">Explore Our Categories</h2>
         <div className="w-full px-4 py-6">
-  <div className="flex flex-wrap justify-center gap-6 max-w-7xl mx-auto">
-    {categories
-      .filter((cat) => cat.name && cat.name.trim() !== "")
-      .map((cat) => (
-        <Link key={cat.id} href={`/product?category=${encodeURIComponent(cat.name)}`}>
-          <div className="w-64 bg-white flex flex-col items-center justify-center p-6 rounded-2xl shadow-sm border border-[#ffe0b2] transition-all duration-300 hover:scale-105 hover:shadow-md group">
-            <div className="w-40 h-40 flex items-center justify-center rounded-2xl bg-white shadow-sm mb-6 border-4 border-[#ffe0b2] overflow-hidden">
-              {cat.image ? (
-                <img src={cat.image} alt={cat.name} className="w-full h-full object-cover" />
-              ) : (
-                <span className="text-5xl text-[#DA8616]">{cat.icon}</span>
-              )}
-            </div>
-            <h3 className="text-2xl font-bold text-[#b86c0e] group-hover:text-[#DA8616] transition-colors mt-2 text-center  ${cinzel.className}">
-              {cat.name}
-            </h3>
+          <div className="flex flex-wrap justify-center gap-6 max-w-7xl mx-auto">
+            {categories
+              .filter((cat) => cat.name && cat.name.trim() !== "")
+              .map((cat) => (
+                <Link key={cat.id} href={`/product?category=${encodeURIComponent(cat.name)}`}>
+                  <div className="w-64 bg-white flex flex-col items-center justify-center p-6 rounded-2xl shadow-sm border border-[#ffe0b2] transition-all duration-300 hover:scale-105 hover:shadow-md group">
+                    <div className="w-40 h-40 flex items-center justify-center rounded-2xl bg-white shadow-sm mb-6 border-4 border-[#ffe0b2] overflow-hidden">
+                      {cat.image ? (
+                        <img src={cat.image} alt={cat.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="text-5xl text-[#DA8616]">{cat.icon}</span>
+                      )}
+                    </div>
+                    <h3 className="text-2xl font-bold text-[#b86c0e] group-hover:text-[#DA8616] transition-colors mt-2 text-center">
+                      {cat.name}
+                    </h3>
+                  </div>
+                </Link>
+              ))}
           </div>
-        </Link>
-      ))}
-  </div>
-</div>
+        </div>
 
 
         <div className="mt-20 px-4">
@@ -225,25 +220,23 @@ const Home = () => {
           </div>
         </div>
 
-        <div className="mt-20  px-4">
-          <h3 className="text-center font-semibold text-2xl font-serif mb-12 text-[#DA8616]">Why Choose Us</h3>
-          <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="mt-20 px-4">
+          <h3 className="text-center font-semibold text-3xl font-serif mb-16 text-[#DA8616]">Why Choose Us</h3>
+          <div className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {reasons.map((reason) => (
-              <div key={reason.id} className="text-center">
-                <div className="w-16 h-16 bg-[#DA8616] rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
-                  <span className="text-2xl text-white">{reason.icon}</span>
+              <div key={reason.id} className="text-center group hover:scale-105 transition-all duration-300">
+                <div className="w-20 h-20 bg-gradient-to-br from-[#DA8616] to-[#ffb347] rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl group-hover:shadow-2xl group-hover:rotate-6 transition-all duration-300">
+                  <span className="text-3xl">{reason.icon}</span>
                 </div>
-                <h4 className="text-xl font-semibold mb-3 text-[#DA8616]">{reason.title}</h4>
-               
+                <h4 className="text-xl font-bold mb-3 text-[#DA8616] group-hover:text-[#b86c0e] transition-colors">{reason.title}</h4>
+                <p className="text-gray-600 text-sm leading-relaxed">{reason.description}</p>
               </div>
             ))}
           </div>
         </div>
-
-        {/* Footer */}
-         
       </div>
-    <footer data-scroll-section className="w-full bg-gradient-to-r from-[#DA8616] to-[#ffb347] text-black pt-12 pb-6 shadow-inner ">
+      
+      <footer data-scroll-section className="w-full bg-gradient-to-r from-[#DA8616] to-[#ffb347] text-black pt-12 pb-6 shadow-inner">
         <div className="max-w-6xl mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
             <h4 className="text-xl font-bold mb-4">About Us</h4>
@@ -279,6 +272,18 @@ const Home = () => {
           &copy; {new Date().getFullYear()} Young Mynds Infotech. All rights reserved.
         </div>
       </footer>
+
+      {/* Floating WhatsApp Button */}
+      <div className="fixed bottom-6 right-6 z-50">
+        <a
+          href="https://wa.me/919876543210?text=Hi! I'm interested in your pooja products"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="bg-green-500 hover:bg-green-600 text-white w-14 h-14 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 animate-pulse"
+        >
+          <FaWhatsapp className="text-2xl" />
+        </a>
+      </div>
     </div>
   );
 };

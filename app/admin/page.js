@@ -15,16 +15,22 @@ import {
   productsCollection,
   categoriesCollection,
   db,
+  auth,
 } from '../../firebase/config';
 import { uploadToCloudinary } from '../../utils/cloudinary';
 import Link from 'next/link';
+import { signOut } from 'firebase/auth';
+import { useRouter } from 'next/navigation';
 
 export default function AdminPage() {
+  const router = useRouter();
+  const [user, setUser] = useState(null);
   const [tab, setTab] = useState('view');
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [subcategories, setSubcategories] = useState([]);
   const [search, setSearch] = useState('');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Form fields
   const [title, setTitle] = useState('');
@@ -46,9 +52,19 @@ export default function AdminPage() {
   const [catImgUploading, setCatImgUploading] = useState(false);
   const [catImgPreview, setCatImgPreview] = useState("");
 
-  // Limit for categories
-  const maxCategories = 5;
-  const categoryLimitReached = categories.length >= maxCategories;
+  // No limit for categories
+
+  // Check authentication
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((firebaseUser) => {
+      if (firebaseUser) {
+        setUser(firebaseUser);
+      } else {
+        router.push('/login');
+      }
+    });
+    return () => unsubscribe();
+  }, [router]);
 
   // Live updates
   useEffect(() => {
@@ -81,18 +97,21 @@ export default function AdminPage() {
     setTimeout(() => setMessage(''), 3000);
   };
 
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      router.push('/login');
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
+
   const handleSaveProduct = async () => {
     const finalCat = (newCategory.trim() || category.trim()).trim();
     const finalSub = (newSubcategory.trim() || subcategory.trim()).trim();
 
     if (!title.trim() || !price || !finalCat || !finalSub) {
       return alert('Fill all fields!');
-    }
-
-    if (newCategory.trim() && categoryLimitReached && !categories.some(c => c.name.toLowerCase() === newCategory.trim().toLowerCase())) {
-      alert('You can only have a maximum of 5 categories.');
-      setUploading(false);
-      return;
     }
 
     setUploading(true);
@@ -175,120 +194,356 @@ export default function AdminPage() {
   // Count featured products
   const featuredCount = products.filter(p => p.bestSeller && (!editingId || p.id !== editingId)).length;
 
+  // Get user initials
+  const getUserInitials = (displayName, email) => {
+    if (displayName) {
+      return displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+    }
+    if (email) {
+      return email[0].toUpperCase();
+    }
+    return 'U';
+  };
+
+  if (!user) {
+    return <div className="flex items-center justify-center h-screen">Loading...</div>;
+  }
+
   return (
-    <div className="p-6 mx-auto max-w-4xl space-y-6">
-      <div className="flex justify-between items-center mb-4">
-        <Link href="/" className="text-[#b86c0e] font-bold text-lg bg-white px-4 py-2 rounded shadow hover:bg-[#ffe0b2] transition-colors">Home</Link>
-        <nav className="flex gap-4">
-          <button onClick={() => { resetForm(); setTab('view'); }}
-            className={`px-4 py-2 rounded ${tab==='view' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}>View Products</button>
-          <button onClick={() => { resetForm(); setTab('add'); }}
-            className={`px-4 py-2 rounded ${tab==='add' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}>Add / Edit Product</button>
-          <button onClick={() => setTab('cat')}
-            className={`px-4 py-2 rounded ${tab==='cat' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}>Manage Categories</button>
-        </nav>
-      </div>
+    <div className="flex h-screen bg-gray-100">
+      {/* Mobile Sidebar Overlay */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
 
-      {message && <p className="bg-green-100 text-green-800 text-center p-2 rounded">{message}</p>}
-
-      {tab === 'view' && (
-        <div>
-          <input type="text" placeholder="Search..." value={search}
-            onChange={e => setSearch(e.target.value)}
-            className="border w-full mb-4 p-2 rounded" />
-          <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
-            {filtered.map(p => (
-              <div key={p.id} className="bg-white rounded shadow p-4 flex flex-col">
-                {p.image && <img src={p.image} alt="" className="h-32 w-full object-cover rounded mb-2" />}
-                <h3 className="font-bold">{p.title}</h3>
-                <p>ID: {p.customId}</p>
-                <p>₹{p.price}</p>
-                <p>{p.category} / {p.subcategory}</p>
-                <div className="mt-auto flex gap-2">
-                  <button onClick={() => handleEditProduct(p)} className="flex-1 bg-green-600 text-white py-1 rounded">Edit</button>
-                  <button onClick={() => handleDeleteProduct(p.id)} className="flex-1 bg-red-500 text-white py-1 rounded">Delete</button>
-                </div>
-              </div>
-            ))}
+      {/* Sidebar */}
+      <div className={`fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out ${
+        sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+      }`}>
+        {/* Logo Section */}
+        <div className="p-6 border-b">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
+              <span className="text-white font-bold text-sm">SMB</span>
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-gray-800">Admin Panel</h1>
+            </div>
           </div>
         </div>
-      )}
 
-      {tab === 'add' && (
-        <div className="bg-white p-6 rounded shadow space-y-4">
-          <fieldset disabled={uploading} className="space-y-3">
-            <input value={title} onChange={e=>setTitle(e.target.value)} placeholder="Title" className="w-full p-2 border rounded" />
-            <input value={price} type="number" onChange={e=>setPrice(e.target.value)} placeholder="Price" className="w-full p-2 border rounded" />
+        {/* Navigation */}
+        <nav className="p-4 space-y-2">
+          <button 
+            onClick={() => { resetForm(); setTab('view'); setSidebarOpen(false); }}
+            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
+              tab === 'view' 
+                ? 'bg-green-500 text-white' 
+                : 'text-gray-600 hover:bg-gray-100'
+            }`}
+          >
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" />
+            </svg>
+            <span>Dashboard</span>
+          </button>
 
-            <div className="grid sm:grid-cols-2 gap-2">
-              <div><label>Select Category</label>
-                <input list="catlist" value={category}
-                  onChange={e=>{setCategory(e.target.value);setNewCategory('')}} placeholder="Choose or type" className="w-full p-2 border rounded" />
-                <datalist id="catlist">{categories.map(c=> <option key={c.id} value={c.name} />)}</datalist>
-              </div>
-              <div><label>Add New Category</label>
-                <input value={newCategory}
-                  onChange={e=>{setNewCategory(e.target.value);setCategory('')}} placeholder="New category" className="w-full p-2 border rounded" disabled={categoryLimitReached} />
-                {categoryLimitReached && <p className="text-xs text-red-500 mt-1">Maximum 5 categories allowed.</p>}
-              </div>
+          <button 
+            onClick={() => { resetForm(); setTab('add'); setSidebarOpen(false); }}
+            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
+              tab === 'add' 
+                ? 'bg-green-500 text-white' 
+                : 'text-gray-600 hover:bg-gray-100'
+            }`}
+          >
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" />
+            </svg>
+            <span>Products</span>
+          </button>
+
+          <button 
+            onClick={() => { setTab('cat'); setSidebarOpen(false); }}
+            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
+              tab === 'cat' 
+                ? 'bg-green-500 text-white' 
+                : 'text-gray-600 hover:bg-gray-100'
+            }`}
+          >
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" />
+            </svg>
+            <span>Categories</span>
+          </button>
+        </nav>
+
+        {/* Logout Section */}
+        <div className="absolute bottom-4 left-4 right-4">
+          <button 
+            onClick={handleLogout}
+            className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors"
+          >
+            <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
+              <span className="text-gray-600 font-bold text-sm">
+                {getUserInitials(user.displayName, user.email)}
+              </span>
             </div>
-
-            <div className="grid sm:grid-cols-2 gap-2">
-              <div><label>Select Subcategory</label>
-                <input list="sublist" value={subcategory}
-                  onChange={e=>{setSubcategory(e.target.value);setNewSubcategory('')}} placeholder="Choose or type" className="w-full p-2 border rounded" />
-                <datalist id="sublist">{subcategories.map(s => <option key={s} value={s} />)}</datalist>
-              </div>
-              <div><label>Add New Subcategory</label>
-                <input value={newSubcategory}
-                  onChange={e=>{setNewSubcategory(e.target.value);setSubcategory('')}} placeholder="New subcategory" className="w-full p-2 border rounded" />
-              </div>
-            </div>
-
-            <div><input type="file" onChange={e=>setImgFile(e.target.files[0])} />
-              {existingImg && !imgFile && <img src={existingImg} alt="" className="w-full h-32 object-cover rounded mt-2" />}
-            </div>
-
-            <label>
-              <input type="checkbox" checked={bestSeller} onChange={e=>setBestSeller(e.target.checked)}
-                disabled={!bestSeller && featuredCount >= 3}
-              /> Feature Product
-            </label>
-            <button onClick={handleSaveProduct} className="w-full bg-blue-600 text-white py-2 rounded">
-              {editingId ? 'Update Product' : 'Add Product'}
-            </button>
-          </fieldset>
-          {uploading && <p className="text-center text-blue-600">Uploading… Please wait.</p>}
+            <span>→ Logout</span>
+          </button>
         </div>
-      )}
+      </div>
 
-      {tab === 'cat' && (
-        <div className="bg-white p-4 rounded shadow space-y-4">
-          {categories.map(cat => (
-            <div key={cat.id} className="flex flex-col md:flex-row items-start md:items-center justify-between gap-2 border-b pb-4 mb-2">
-              <div className="flex-1 flex flex-col md:flex-row gap-2 items-center">
-                <input defaultValue={cat.name}
-                  onBlur={e=>updateDoc(doc(db, 'categories', cat.id), { name: e.target.value.trim() })}
-                  className="flex-1 p-2 border rounded" />
-                {/* Image preview */}
-                {cat.image && <img src={cat.image} alt="" className="h-12 w-12 object-cover rounded border ml-2" />}
-                {/* Image upload */}
-                <input type="file" accept="image/*" onChange={async e => {
-                  const file = e.target.files[0];
-                  if (!file) return;
-                  setCatImgUploading(true);
-                  const url = await uploadToCloudinary(file);
-                  await updateDoc(doc(db, 'categories', cat.id), { image: url });
-                  setCatImgUploading(false);
-                }} className="ml-2" />
-                {catImgUploading && <span className="text-xs text-blue-600 ml-2">Uploading…</span>}
-              </div>
-              <button onClick={()=> deleteDoc(doc(db,'categories',cat.id))}
-                className="bg-red-500 text-white px-3 py-1 rounded mt-2 md:mt-0">Delete</button>
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col">
+        {/* Header */}
+        <header className="bg-black text-white px-4 lg:px-6 py-4 flex justify-between items-center">
+          {/* Mobile Menu Button */}
+          <button 
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="lg:hidden text-white focus:outline-none"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+
+          <h1 className="text-lg lg:text-xl font-bold">DashBoard</h1>
+          
+          <div className="flex items-center space-x-2 lg:space-x-3">
+            <div className="hidden sm:block">
+              <span className="text-sm">{user.displayName || 'User'}</span>
             </div>
-          ))}
-        </div>
-      )}
+            <div className="hidden md:block">
+              <span className="text-sm text-gray-300">{user.email}</span>
+            </div>
+            <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
+              <span className="text-gray-600 font-bold text-sm">
+                {getUserInitials(user.displayName, user.email)}
+              </span>
+            </div>
+          </div>
+        </header>
+
+        {/* Content Area */}
+        <main className="flex-1 p-4 lg:p-6 overflow-auto">
+          <div className="mb-6">
+            <h2 className="text-xl lg:text-2xl font-bold text-gray-800 mb-4">Dashboard</h2>
+          </div>
+
+          {message && (
+            <div className="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
+              {message}
+            </div>
+          )}
+
+          {tab === 'view' && (
+            <div className="bg-white rounded-lg shadow-md p-4 lg:p-6">
+              <div className="mb-6">
+                <input 
+                  type="text" 
+                  placeholder="Search products..." 
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
+                {filtered.map(p => (
+                  <div key={p.id} className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                    {p.image && (
+                      <img src={p.image} alt={p.title} className="w-full h-32 sm:h-48 object-cover rounded-t-lg" />
+                    )}
+                    <div className="p-3 lg:p-4">
+                      <h3 className="font-semibold text-gray-800 mb-2 text-sm lg:text-base truncate">{p.title}</h3>
+                      <p className="text-xs lg:text-sm text-gray-600 mb-1">ID: {p.customId}</p>
+                      <p className="text-base lg:text-lg font-bold text-green-600 mb-1">₹{p.price}</p>
+                      <p className="text-xs lg:text-sm text-gray-500 mb-3 truncate">{p.category} / {p.subcategory}</p>
+                      <div className="flex space-x-2">
+                        <button 
+                          onClick={() => handleEditProduct(p)} 
+                          className="flex-1 bg-green-500 text-white py-1 lg:py-2 px-2 lg:px-3 rounded-lg text-xs lg:text-sm hover:bg-green-600 transition-colors"
+                        >
+                          Edit
+                        </button>
+                        <button 
+                          onClick={() => handleDeleteProduct(p.id)} 
+                          className="flex-1 bg-red-500 text-white py-1 lg:py-2 px-2 lg:px-3 rounded-lg text-xs lg:text-sm hover:bg-red-600 transition-colors"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {tab === 'add' && (
+            <div className="bg-white rounded-lg shadow-md p-4 lg:p-6">
+              <h3 className="text-lg lg:text-xl font-semibold mb-6">
+                {editingId ? 'Edit Product' : 'Add New Product'}
+              </h3>
+              <form onSubmit={(e) => { e.preventDefault(); handleSaveProduct(); }} className="space-y-4 lg:space-y-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Product Title</label>
+                    <input 
+                      value={title} 
+                      onChange={e => setTitle(e.target.value)} 
+                      placeholder="Enter product title" 
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      disabled={uploading}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Price</label>
+                    <input 
+                      value={price} 
+                      type="number" 
+                      onChange={e => setPrice(e.target.value)} 
+                      placeholder="Enter price" 
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      disabled={uploading}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Select Category</label>
+                    <input 
+                      list="catlist" 
+                      value={category}
+                      onChange={e => {setCategory(e.target.value); setNewCategory('')}} 
+                      placeholder="Choose existing category" 
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      disabled={uploading}
+                    />
+                    <datalist id="catlist">
+                      {categories.map(c => <option key={c.id} value={c.name} />)}
+                    </datalist>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Add New Category</label>
+                    <input 
+                      value={newCategory}
+                      onChange={e => {setNewCategory(e.target.value); setCategory('')}} 
+                      placeholder="Enter new category name" 
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      disabled={uploading}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Select Subcategory</label>
+                    <input 
+                      list="sublist" 
+                      value={subcategory}
+                      onChange={e => {setSubcategory(e.target.value); setNewSubcategory('')}} 
+                      placeholder="Choose existing subcategory" 
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      disabled={uploading}
+                    />
+                    <datalist id="sublist">
+                      {subcategories.map(s => <option key={s} value={s} />)}
+                    </datalist>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Add New Subcategory</label>
+                    <input 
+                      value={newSubcategory}
+                      onChange={e => {setNewSubcategory(e.target.value); setSubcategory('')}} 
+                      placeholder="Enter new subcategory name" 
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      disabled={uploading}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Product Image</label>
+                  <input 
+                    type="file" 
+                    onChange={e => setImgFile(e.target.files[0])} 
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    disabled={uploading}
+                  />
+                  {existingImg && !imgFile && (
+                    <img src={existingImg} alt="Current product image" className="w-full h-32 lg:h-48 object-cover rounded-lg mt-2" />
+                  )}
+                </div>
+
+                <div className="flex items-center">
+                  <input 
+                    type="checkbox" 
+                    checked={bestSeller} 
+                    onChange={e => setBestSeller(e.target.checked)}
+                    disabled={!bestSeller && featuredCount >= 3}
+                    className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                  />
+                  <label className="ml-2 text-sm text-gray-700">Feature Product</label>
+                </div>
+
+                <button 
+                  type="submit" 
+                  className="w-full bg-green-500 text-white py-3 px-4 rounded-lg font-medium hover:bg-green-600 transition-colors disabled:opacity-50"
+                  disabled={uploading}
+                >
+                  {uploading ? 'Uploading...' : (editingId ? 'Update Product' : 'Add Product')}
+                </button>
+              </form>
+            </div>
+          )}
+
+          {tab === 'cat' && (
+            <div className="bg-white rounded-lg shadow-md p-4 lg:p-6">
+              <h3 className="text-lg lg:text-xl font-semibold mb-6">Manage Categories</h3>
+              <div className="space-y-4">
+                {categories.map(cat => (
+                  <div key={cat.id} className="flex flex-col lg:flex-row lg:items-center justify-between p-4 border border-gray-200 rounded-lg space-y-3 lg:space-y-0">
+                    <div className="flex flex-col lg:flex-row lg:items-center space-y-3 lg:space-y-0 lg:space-x-4 flex-1">
+                      <input 
+                        defaultValue={cat.name}
+                        onBlur={e => updateDoc(doc(db, 'categories', cat.id), { name: e.target.value.trim() })}
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      />
+                      {cat.image && (
+                        <img src={cat.image} alt="" className="h-12 w-12 object-cover rounded-lg border" />
+                      )}
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        onChange={async e => {
+                          const file = e.target.files[0];
+                          if (!file) return;
+                          setCatImgUploading(true);
+                          const url = await uploadToCloudinary(file);
+                          await updateDoc(doc(db, 'categories', cat.id), { image: url });
+                          setCatImgUploading(false);
+                        }} 
+                        className="text-sm"
+                      />
+                      {catImgUploading && <span className="text-xs text-blue-600">Uploading…</span>}
+                    </div>
+                    <button 
+                      onClick={() => deleteDoc(doc(db, 'categories', cat.id))}
+                      className="lg:ml-4 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </main>
+      </div>
     </div>
   );
 }
