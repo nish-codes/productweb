@@ -1,4 +1,5 @@
 'use client';
+
 import { useEffect, useState } from 'react';
 import {
   onSnapshot,
@@ -18,9 +19,10 @@ import {
   auth,
 } from '../../firebase/config';
 import { uploadToCloudinary } from '../../utils/cloudinary';
-import Link from 'next/link';
 import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
+
+const ADMIN_EMAIL = "sspenterprises.contact@gmail.com";
 
 export default function AdminPage() {
   const router = useRouter();
@@ -32,7 +34,6 @@ export default function AdminPage() {
   const [search, setSearch] = useState('');
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // Form fields
   const [title, setTitle] = useState('');
   const [price, setPrice] = useState('');
   const [imgFile, setImgFile] = useState(null);
@@ -47,18 +48,19 @@ export default function AdminPage() {
   const [uploading, setUploading] = useState(false);
   const [message, setMessage] = useState('');
 
-  // Add state for category image upload
   const [catImgFile, setCatImgFile] = useState(null);
   const [catImgUploading, setCatImgUploading] = useState(false);
   const [catImgPreview, setCatImgPreview] = useState("");
 
-  // No limit for categories
-
-  // Check authentication
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((firebaseUser) => {
       if (firebaseUser) {
-        setUser(firebaseUser);
+        if (firebaseUser.email === ADMIN_EMAIL) {
+          setUser(firebaseUser);
+        } else {
+          auth.signOut();
+          router.push('/login');
+        }
       } else {
         router.push('/login');
       }
@@ -66,7 +68,6 @@ export default function AdminPage() {
     return () => unsubscribe();
   }, [router]);
 
-  // Live updates
   useEffect(() => {
     const unsubP = onSnapshot(productsCollection, snap => {
       setProducts(snap.docs.map(d => ({ id: d.id, ...d.data() })));
@@ -191,10 +192,8 @@ export default function AdminPage() {
     `${p.customId}`.includes(search)
   );
 
-  // Count featured products
   const featuredCount = products.filter(p => p.bestSeller && (!editingId || p.id !== editingId)).length;
 
-  // Get user initials
   const getUserInitials = (displayName, email) => {
     if (displayName) {
       return displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
@@ -206,12 +205,18 @@ export default function AdminPage() {
   };
 
   if (!user) {
-    return <div className="flex items-center justify-center h-screen">Loading...</div>;
+    return (
+      <div className="flex items-center justify-center h-screen bg-gray-100">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-[#DA8616] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
     <div className="flex h-screen bg-gray-100">
-      {/* Mobile Sidebar Overlay */}
       {sidebarOpen && (
         <div 
           className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
@@ -219,11 +224,9 @@ export default function AdminPage() {
         />
       )}
 
-      {/* Sidebar */}
       <div className={`fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out ${
         sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
       }`}>
-        {/* Logo Section */}
         <div className="p-6 border-b">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
@@ -235,7 +238,6 @@ export default function AdminPage() {
           </div>
         </div>
 
-        {/* Navigation */}
         <nav className="p-4 space-y-2">
           <button 
             onClick={() => { resetForm(); setTab('view'); setSidebarOpen(false); }}
@@ -280,7 +282,6 @@ export default function AdminPage() {
           </button>
         </nav>
 
-        {/* Logout Section */}
         <div className="absolute bottom-4 left-4 right-4">
           <button 
             onClick={handleLogout}
@@ -296,11 +297,8 @@ export default function AdminPage() {
         </div>
       </div>
 
-      {/* Main Content */}
       <div className="flex-1 flex flex-col">
-        {/* Header */}
         <header className="bg-black text-white px-4 lg:px-6 py-4 flex justify-between items-center">
-          {/* Mobile Menu Button */}
           <button 
             onClick={() => setSidebarOpen(!sidebarOpen)}
             className="lg:hidden text-white focus:outline-none"
@@ -327,7 +325,6 @@ export default function AdminPage() {
           </div>
         </header>
 
-        {/* Content Area */}
         <main className="flex-1 p-4 lg:p-6 overflow-auto">
           <div className="mb-6">
             <h2 className="text-xl lg:text-2xl font-bold text-gray-800 mb-4">Dashboard</h2>

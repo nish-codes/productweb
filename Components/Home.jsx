@@ -7,7 +7,7 @@ import { Geist } from "next/font/google";
 import "locomotive-scroll/dist/locomotive-scroll.css";
 import { FaWhatsapp } from "react-icons/fa";
 import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
-import { db, categoriesCollection } from "../firebase/config"; // update the path if needed
+import { db, categoriesCollection } from "../firebase/config";
 import Link from "next/link";
 
 const cinzel = Cinzel({
@@ -76,7 +76,6 @@ const Home = () => {
   return () => unsubscribe();
 }, []);
 
-  // Locomotive Scroll setup (useLayoutEffect for layout stability)
   useLayoutEffect(() => {
     if (!scrollRef.current) return;
     let scroll;
@@ -99,7 +98,6 @@ const Home = () => {
     };
   }, []);
 
-  // Update Locomotive Scroll when products/categories change
   useEffect(() => {
     if (scrollInstance.current) {
       scrollInstance.current.update();
@@ -121,7 +119,6 @@ const Home = () => {
 
   return (
     <div ref={scrollRef} data-scroll-container>
-      {/* Hero Section */}
       <div data-scroll-section className="relative h-screen">
         <div
           className="absolute inset-0 bg-[url('/Assets/modelbg.jpg')] bg-cover bg-bottom"
@@ -168,7 +165,6 @@ const Home = () => {
         </div>
       </div>
 
-      {/* Main Content Section */}
       <div data-scroll-section className="bg-[#FAF3E0] py-8 relative">
 
         <h2 className="text-center font-semibold text-4xl mb-[10vh] text-[#DA8616] drop-shadow">Explore Our Categories</h2>
@@ -273,7 +269,6 @@ const Home = () => {
         </div>
       </footer>
 
-      {/* Floating WhatsApp Button */}
       <div className="fixed bottom-6 right-6 z-50">
         <a
           href="https://wa.me/919876543210?text=Hi! I'm interested in your pooja products"
