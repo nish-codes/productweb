@@ -3,13 +3,13 @@ import { getAuth , GoogleAuthProvider } from "firebase/auth";
 import { getFirestore, collection } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAteTpRyXu9lh44MuupJWd95YKzmFSBXRA",
-  authDomain: "pooja-product-9bc0f.firebaseapp.com",
-  projectId: "pooja-product-9bc0f",
-  storageBucket: "pooja-product-9bc0f.firebasestorage.app",
-  messagingSenderId: "13551138746",
-  appId: "1:13551138746:web:eb6e6eaa1cdb95d6c6cf83",
-  measurementId: "G-Q245C5FRPC"
+  apiKey: "AIzaSyBZ4uzXGG-1_R4yuFWNyRzul0G9qlYCZKo",
+  authDomain: "pooja-product-f194d.firebaseapp.com",
+  projectId: "pooja-product-f194d",
+  storageBucket: "pooja-product-f194d.firebasestorage.app",
+  messagingSenderId: "314419865300",
+  appId: "1:314419865300:web:5b8dbb59a40425ed487d41",
+  measurementId: "G-HG6FWV75N0"
 };
 
 // Initialize Firebase
